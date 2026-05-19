@@ -57,20 +57,20 @@ body::before {
 }
 .header, .hero, .section, .footer { position: relative; z-index: 1; }
 
-/* Scattered floating balls */
+/* Scattered floating Pokemon */
 .deco-ball {
   position: fixed;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.07;
+  opacity: 0.12;
   animation: floatBall 20s ease-in-out infinite;
 }
-.deco-ball:nth-child(1) { top: 8%; left: 5%; width: 60px; animation-delay: 0s; }
-.deco-ball:nth-child(2) { top: 25%; right: 8%; width: 45px; animation-delay: -4s; transform: rotate(20deg); }
-.deco-ball:nth-child(3) { top: 55%; left: 3%; width: 35px; animation-delay: -8s; transform: rotate(-15deg); }
-.deco-ball:nth-child(4) { top: 70%; right: 4%; width: 55px; animation-delay: -12s; transform: rotate(35deg); }
-.deco-ball:nth-child(5) { top: 90%; left: 15%; width: 40px; animation-delay: -16s; transform: rotate(-25deg); }
-.deco-ball:nth-child(6) { top: 40%; left: 92%; width: 50px; animation-delay: -6s; transform: rotate(10deg); }
+.deco-ball:nth-child(1) { top: 8%; left: 4%; width: 100px; animation-delay: 0s; }
+.deco-ball:nth-child(2) { top: 20%; right: 5%; width: 90px; animation-delay: -4s; }
+.deco-ball:nth-child(3) { top: 50%; left: 2%; width: 70px; animation-delay: -8s; }
+.deco-ball:nth-child(4) { top: 65%; right: 3%; width: 80px; animation-delay: -12s; }
+.deco-ball:nth-child(5) { top: 85%; left: 10%; width: 65px; animation-delay: -16s; }
+.deco-ball:nth-child(6) { top: 38%; left: 90%; width: 75px; animation-delay: -6s; }
 @keyframes floatBall {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   25% { transform: translateY(-12px) rotate(5deg); }
@@ -435,13 +435,13 @@ body::before {
 </head>
 <body>
 
-<!-- Floating Pokeball decorations -->
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#EE1515" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#3B4CCA" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#FFCC00" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#7AC74C" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#EE8130" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
-<svg class="deco-ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#fff" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50h90" stroke="#1F1F1F" stroke-width="6"/><path d="M5 50A45 45 0 0 1 95 50" fill="#6390F0" stroke="#1F1F1F" stroke-width="6"/><circle cx="50" cy="50" r="12" fill="#fff" stroke="#1F1F1F" stroke-width="6"/></svg>
+<!-- Floating Pokemon decorations -->
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="">
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="">
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="">
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png" alt="">
+<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png" alt="">
 
 <header class="header">
   <a href="/" class="logo">
