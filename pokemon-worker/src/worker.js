@@ -13,6 +13,7 @@
  */
 
 import ADMIN_HTML from "./admin.html";
+import LANDING_HTML from "./landing.html";
 
 
 export default {
@@ -116,8 +117,15 @@ export default {
       }
 
       // ─── Admin Panel (HTML) ───
-      if (path === "/" || path === "/index.html") {
+      if (path === "/admin" || path === "/admin/") {
         return new Response(ADMIN_HTML, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      }
+
+      // ─── Landing Page ───
+      if (path === "/" || path === "/index.html") {
+        return new Response(LANDING_HTML, {
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }
