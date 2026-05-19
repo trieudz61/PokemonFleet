@@ -1,0 +1,29 @@
+name = "pokemon-script-worker"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+
+# Import .html as text string
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+# ─── Custom domain ───
+[[routes]]
+pattern = "pokemon.ioscontrol.com"
+custom_domain = true
+
+# ─── D1 Database ───
+[[d1_databases]]
+binding = "DB"
+database_name = "pokemon-scripts"
+database_id = "acf9b243-ff9f-474f-9c79-f5d58a3d133b"
+
+# ─── KV (rate limiting) ───
+[[kv_namespaces]]
+binding = "KV"
+id = "595ee614147e4043840e048ed5ea19b0"
+
+# ─── Environment variables ───
+[vars]
+ADMIN_TOKEN = "Trieu@123"

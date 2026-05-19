@@ -1,0 +1,57 @@
+/* PokemonFleet — Pokemon cartoon theme.
+ *
+ * Palette inspired by classic Pokemon brand colors. The UI runs on a light,
+ * cheerful surface with bright accents. Aim is "playful pro tool", not a
+ * generic dashboard.
+ */
+
+:root {
+  /* ── Surface ─────────────────────────────────────────────── */
+  --bg:        #f6fbff;                     /* sky-pale */
+  --bg-elev:   #ffffff;                     /* card */
+  --bg-elev-2: #eef5ff;
+  --bg-input:  #ffffff;
+  --bg-row-hover: #fff8d6;                  /* pikachu sunshine */
+  --bg-bar:    linear-gradient(135deg, #ffd84d 0%, #ffbb00 100%);
+  --bg-poke:   linear-gradient(180deg, #ee1515 0%, #ee1515 50%, #ffffff 50%, #ffffff 100%);
+
+  /* ── Borders ─────────────────────────────────────────────── */
+  --border:    #d0dff5;
+  --border-strong: #1f3a5f;
+  --border-card:   #1f3a5f;
+
+  /* ── Text ────────────────────────────────────────────────── */
+  --text:        #1f3a5f;                   /* deep ink */
+  --text-strong: #0e1e36;
+  --text-muted:  #67809f;
+  --text-on-accent: #1f3a5f;
+  --text-on-dark:   #ffffff;
+
+  /* ── Pokemon brand accents ───────────────────────────────── */
+  --poke-red:    #ee1515;                   /* Pokéball */
+  --poke-yellow: #ffcb05;                   /* Pikachu */
+  --poke-blue:   #2a75bb;                   /* Pokemon logo blue */
+  --poke-blue-dark: #1d4f80;
+  --poke-orange: #ff8a3d;
+  --poke-green:  #4caf50;
+  --poke-purple: #8e44ad;
+
+  /* ── Semantic ────────────────────────────────────────────── */
+  --accent:        var(--poke-blue);
+  --accent-2:      #4f9ad8;
+  --accent-glow:   rgba(42, 117, 187, 0.28);
+  --success: #2e9b54;
+  --warn:    #ff8a3d;
+  --danger:  var(--poke-red);
+
+  /* ── Shadows ─────────────────────────────────────────────── */
+  --shadow-sm: 0 2px 0 #c9d8ec;
+  --shadow-md: 0 6px 0 #c9d8ec;
+  --shadow-lg: 0 12px 32px rgba(31, 58, 95, 0.16);
+
+  /* ── Radii ──────────────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+}

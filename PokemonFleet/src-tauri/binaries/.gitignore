@@ -1,0 +1,7 @@
+# Windows build artifacts produced by CI. Don't commit binaries here —
+# the GitHub Actions workflow (.github/workflows/build-windows.yml) downloads
+# libimobiledevice on every run and drops the executables here before
+# `tauri build` so they get bundled into the installer.
+*.exe
+*.dll
+!.gitignore

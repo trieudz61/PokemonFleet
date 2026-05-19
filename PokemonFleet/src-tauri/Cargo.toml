@@ -1,0 +1,74 @@
+[package]
+name = "pokemonfleet"
+version = "0.1.0"
+description = "Fleet manager for jailbroken iPhones"
+authors = ["IOSControl"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "pokemonfleet_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# HTTP client
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# SQLite
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# Utilities
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+once_cell = "1"
+parking_lot = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+rand = "0.8"
+
+# SSE
+eventsource-stream = "0.2"
+
+# Process management
+which = "6"
+
+# Platform-specific
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["jobapi2", "processthreadsapi", "handleapi", "winbase", "winnt"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# macOS dev: nothing extra needed (libimobiledevice via Homebrew)
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = 3
+strip = true

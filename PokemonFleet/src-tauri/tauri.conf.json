@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PokemonFleet",
+  "version": "0.1.0",
+  "identifier": "com.ioscontrol.pokemonfleet",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "PokemonFleet",
+        "width": 1400,
+        "height": 880,
+        "minWidth": 1100,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "theme": "Light"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis", "dmg", "app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "../assets/PokemonLoader.lue",
+      "../assets/Pokemon_Config.template.txt",
+      "binaries/*"
+    ],
+    "externalBin": [],
+    "copyright": "Copyright (c) 2026 IOSControl",
+    "category": "DeveloperTool",
+    "shortDescription": "Fleet manager for jailbroken iPhones running Pokemon bots",
+    "longDescription": "Manage 10+ jailbroken iPhones via USB. Run Pokemon bots in parallel, edit configs, browse data files, and stream logs from a single Windows desktop app."
+  }
+}

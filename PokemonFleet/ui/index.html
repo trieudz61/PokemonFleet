@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PokemonFleet</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Main app shell -->
+    <div id="main" class="main">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="brand-mini">⚡ PokemonFleet</span>
+          <span class="device-count-badge"><span id="device-count">0</span> devices</span>
+        </div>
+        <div class="topbar-center">
+          <select id="script-picker" class="script-picker">
+            <option value="">— Select a script —</option>
+          </select>
+          <label class="fast-toggle" title="Chạy thẳng script không qua menu loader">
+            <input type="checkbox" id="fast-run-toggle" class="big-check" />
+            <span>⚡ Fast Run</span>
+          </label>
+          <button id="run-all-btn" class="btn btn-success">▶ Run selected</button>
+          <button id="stop-all-btn" class="btn btn-danger">■ Stop selected</button>
+          <button id="refresh-btn" class="btn btn-ghost" title="Refresh device list">↻</button>
+        </div>
+        <div class="topbar-right">
+          <span id="license-badge" class="license-badge"></span>
+        </div>
+      </header>
+
+      <!-- Toolbar -->
+      <div class="subbar">
+        <label class="check-all">
+          <input type="checkbox" id="select-all" class="big-check" />
+          <span>Select all online</span>
+        </label>
+        <span id="selection-summary" class="selection-summary">0 selected</span>
+        <span class="spacer"></span>
+        <button id="bootstrap-help-btn" class="btn btn-link" title="Setup new device guide">
+          📖 How to setup new device
+        </button>
+      </div>
+
+      <!-- Device table -->
+      <div class="table-wrap">
+        <table class="device-table">
+          <thead>
+            <tr>
+              <th class="col-ord">#</th>
+              <th class="col-check"></th>
+              <th class="col-name">Device</th>
+              <th class="col-status">Status</th>
+              <th class="col-running">Running</th>
+              <th class="col-license">License</th>
+              <th class="col-log">Log</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="device-tbody">
+            <tr class="empty-row">
+              <td colspan="8">
+                <div class="empty-state">
+                  <span class="emoji">🔌</span>
+                  <p>No devices connected</p>
+                  <p class="muted">Plug in iPhones via USB. They'll appear here automatically.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Status bar -->
+      <footer class="statusbar">
+        <span id="status-text">Ready</span>
+        <span class="spacer"></span>
+        <span class="version">v0.1.0</span>
+      </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-root"></div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

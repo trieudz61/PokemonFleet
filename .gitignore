@@ -1,0 +1,15 @@
+# Build artefacts
+node_modules/
+.wrangler/
+PokemonFleet/src-tauri/target/
+PokemonFleet/src-tauri/binaries/*
+!PokemonFleet/src-tauri/binaries/.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
