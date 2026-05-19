@@ -127,6 +127,58 @@ input:focus, select:focus, textarea:focus {
   gap: 12px;
 }
 
+/* ─── Custom window controls (frameless mode) ────────────────── */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  -webkit-app-region: no-drag;
+}
+.win-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  padding: 0;
+  color: var(--text-strong);
+  box-shadow: 0 3px 0 #c9d8ec;
+  cursor: pointer;
+  transition: transform var(--t-fast), box-shadow var(--t-fast),
+              background var(--t-fast), color var(--t-fast);
+}
+.win-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #c9d8ec;
+}
+.win-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #c9d8ec;
+}
+.win-btn svg { display: block; }
+
+/* Minimize: Pokemon blue accent */
+.win-btn.win-min:hover {
+  background: var(--poke-blue);
+  color: #ffffff;
+}
+
+/* Maximize: Pikachu yellow accent */
+.win-btn.win-max:hover {
+  background: var(--poke-yellow);
+  color: var(--text-strong);
+}
+
+/* Close: Pokeball red accent */
+.win-btn.win-close:hover {
+  background: #ee1515;
+  color: #ffffff;
+}
+
 .brand-mini {
   display: flex;
   align-items: center;
@@ -697,3 +749,89 @@ input:focus, select:focus, textarea:focus {
   margin: 0;
 }
 .log-pre.empty { color: #5e7898; font-style: italic; }
+
+/* ─── Screen Grid View ───────────────────────────────────────── */
+
+.pkm-grid-modal .modal {
+  width: min(92vw, 1100px) !important;
+  max-height: 88vh;
+}
+.pkm-grid-modal .modal-body {
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+  max-height: 72vh;
+}
+
+.screen-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.screen-grid-tile {
+  position: relative;
+  border: 3px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+  aspect-ratio: 9 / 16;
+}
+.screen-grid-tile:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 0 #c9d8ec, var(--shadow-lg);
+  border-color: var(--poke-blue);
+}
+
+.screen-grid-frame {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.screen-grid-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #000;
+  pointer-events: none;
+}
+
+.screen-grid-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.screen-grid-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.screen-grid-running {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--poke-yellow);
+  background: rgba(0,0,0,0.5);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}

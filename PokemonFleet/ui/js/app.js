@@ -1,27 +1,26 @@
 // PokemonFleet — main application controller.
 
-// Block dev-tools shortcuts and right-click in the customer build.
-// This runs as early as possible so it covers all subsequent user input.
-(function lockDownInspect() {
-  document.addEventListener("contextmenu", (e) => e.preventDefault());
-  document.addEventListener("keydown", (e) => {
-    const k = e.key?.toLowerCase();
-    // F12 — DevTools.
-    if (e.key === "F12") { e.preventDefault(); return; }
-    const meta = e.metaKey || e.ctrlKey;
-    // Cmd/Ctrl+Shift+I  — DevTools (Inspect)
-    // Cmd/Ctrl+Shift+J  — DevTools (Console)
-    // Cmd/Ctrl+Shift+C  — DevTools (Element picker)
-    if (meta && e.shiftKey && (k === "i" || k === "j" || k === "c")) {
-      e.preventDefault();
-      return;
-    }
-    // Cmd+Alt+I (macOS Inspect Element).
-    if (e.metaKey && e.altKey && k === "i") {
-      e.preventDefault();
-    }
-  });
-})();
+// [DEV] lockDownInspect disabled for debugging — re-enable before release.
+// (function lockDownInspect() {
+//   document.addEventListener("contextmenu", (e) => e.preventDefault());
+//   document.addEventListener("keydown", (e) => {
+//     const k = e.key?.toLowerCase();
+//     // F12 — DevTools.
+//     if (e.key === "F12") { e.preventDefault(); return; }
+//     const meta = e.metaKey || e.ctrlKey;
+//     // Cmd/Ctrl+Shift+I  — DevTools (Inspect)
+//     // Cmd/Ctrl+Shift+J  — DevTools (Console)
+//     // Cmd/Ctrl+Shift+C  — DevTools (Element picker)
+//     if (meta && e.shiftKey && (k === "i" || k === "j" || k === "c")) {
+//       e.preventDefault();
+//       return;
+//     }
+//     // Cmd+Alt+I (macOS Inspect Element).
+//     if (e.metaKey && e.altKey && k === "i") {
+//       e.preventDefault();
+//     }
+//   });
+// })();
 
 //
 // PokemonFleet is a free companion tool. Pokemon licensing is per-iPhone and
@@ -37,6 +36,7 @@ import { openDataViewer } from "./components/DataViewer.js";
 import { openBootstrapWizard } from "./components/BootstrapWizard.js";
 import { openLogModal } from "./components/LogModal.js";
 import { openScreenView } from "./components/ScreenView.js";
+import { openScreenGridView } from "./components/ScreenGridView.js";
 
 const LOG_BUFFER_PER_DEVICE = 500; // hard cap so memory stays bounded.
 
@@ -431,9 +431,25 @@ async function boot() {
     if (e.target.checked) state.table.selectAllOnline();
     else state.table.deselectAll();
   });
+  $("#view-all-screens-btn").addEventListener("click", () => {
+    const selected = state.table.selectedDevices();
+    if (selected.length === 0) {
+      toast("Chọn ít nhất 1 thiết bị trước.", "error");
+      return;
+    }
+    openScreenGridView(selected);
+  });
   $("#bootstrap-help-btn").addEventListener("click", () => {
     showQuickGuide();
   });
+
+  // Custom window controls (frameless window).
+  const tauriWin = window.__TAURI__?.window?.getCurrentWindow?.();
+  if (tauriWin) {
+    $("#win-min")?.addEventListener("click", () => tauriWin.minimize());
+    $("#win-max")?.addEventListener("click", () => tauriWin.toggleMaximize());
+    $("#win-close")?.addEventListener("click", () => tauriWin.close());
+  }
 
   // Subscribe to backend events.
   await api.on("device-connected",     (e) => onDeviceConnected(e.payload));

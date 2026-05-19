@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "PokemonFleet",
+  "productName": "POKEIOSControl",
   "version": "0.1.0",
   "identifier": "com.ioscontrol.pokemonfleet",
   "build": {
@@ -10,14 +10,14 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "PokemonFleet",
+        "title": "POKEIOSControl",
         "width": 1400,
         "height": 880,
         "minWidth": 1100,
         "minHeight": 700,
         "resizable": true,
         "fullscreen": false,
-        "decorations": true,
+        "decorations": false,
         "transparent": false,
         "theme": "Light"
       }

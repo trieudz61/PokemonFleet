@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POKEIOSControl — Screen Grid</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/theme.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .grid-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .grid-topbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 10px;
+      background: var(--bg-bar);
+      border-bottom: 3px solid var(--border-strong);
+      flex-shrink: 0;
+      box-shadow: 0 4px 0 rgba(31, 58, 95, 0.08);
+    }
+    .grid-topbar-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-strong);
+    }
+    .grid-topbar .spacer { flex: 1; }
+    .grid-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px;
+    }
+    .screen-grid-hint {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Pokeball phone frame for each tile in grid */
+    .screen-grid-tile {
+      padding: 5px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,0.6), transparent 60%),
+        linear-gradient(180deg, #ee1515 0%, #b80f0f 100%);
+      border: 3px solid var(--text-strong);
+      border-radius: 14px;
+    }
+    .screen-grid-tile::before {
+      content: "";
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      top: 50%;
+      height: 4px;
+      background: var(--text-strong);
+      transform: translateY(-2px);
+      z-index: 1;
+    }
+    .screen-grid-frame {
+      position: relative;
+      z-index: 2;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--text-strong);
+      box-shadow: inset 0 0 0 1px #fff;
+    }
+
+    /* ─── Control popup ─────────────────────────── */
+    .popup-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 58, 95, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 200ms ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .popup-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: popIn 200ms ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .popup-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-strong);
+    }
+
+    .popup-screen-wrap {
+      height: min(80vh, 750px);
+      aspect-ratio: 9 / 19.5;
+      width: auto;
+    }
+
+    /* Zoomed tile: expands in-place over everything with Pokeball frame */
+    .tile-zoomed {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 101 !important;
+      height: 80vh !important;
+      aspect-ratio: 9 / 19.5 !important;
+      width: auto !important;
+      padding: 10px !important;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,0.6), transparent 60%),
+        linear-gradient(180deg, #ee1515 0%, #b80f0f 100%) !important;
+      border: 4px solid var(--text-strong) !important;
+      box-shadow: 0 0 60px rgba(42, 117, 187, 0.4), var(--shadow-lg) !important;
+      border-radius: var(--radius-lg) !important;
+      animation: popIn 200ms ease;
+    }
+    .tile-zoomed::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 50%;
+      height: 6px;
+      background: var(--text-strong);
+      transform: translateY(-3px);
+      z-index: 1;
+    }
+    .tile-zoomed .screen-grid-frame {
+      position: relative;
+      z-index: 2;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: calc(var(--radius-lg) - 6px);
+      overflow: hidden;
+      border: 3px solid var(--text-strong);
+      box-shadow: inset 0 0 0 2px #fff;
+    }
+    .tile-zoomed .screen-grid-iframe {
+      pointer-events: auto !important;
+    }
+    .tile-zoomed .screen-grid-overlay {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-shell">
+    <header class="grid-topbar" data-tauri-drag-region>
+      <span class="grid-topbar-title" data-tauri-drag-region>📺 View Selected Screens</span>
+      <span class="spacer" data-tauri-drag-region></span>
+      <div class="window-controls">
+        <button id="win-min" class="win-btn win-min" title="Minimize" aria-label="Minimize">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <rect x="2" y="7" width="12" height="2.5" rx="1" fill="currentColor"/>
+          </svg>
+        </button>
+        <button id="win-max" class="win-btn win-max" title="Maximize" aria-label="Maximize">
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+        <button id="win-close" class="win-btn win-close" title="Close" aria-label="Close">
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <path d="M3.5 3.5 L12.5 12.5 M12.5 3.5 L3.5 12.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div class="grid-body">
+      <div id="screen-grid" class="screen-grid"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const T = window.__TAURI__;
+    const tauriWin = T?.window?.getCurrentWindow?.();
+
+    // Window controls
+    document.getElementById("win-min")?.addEventListener("click", () => tauriWin?.minimize());
+    document.getElementById("win-max")?.addEventListener("click", () => tauriWin?.toggleMaximize());
+    document.getElementById("win-close")?.addEventListener("click", () => tauriWin?.close());
+
+    // Read devices from localStorage (set by parent window before opening)
+    const QUALITY = 3;
+    const COMPRESSION = 6;
+
+    const raw = localStorage.getItem("__pkm_grid_devices");
+    const devices = raw ? JSON.parse(raw) : [];
+
+    const gridBody = document.querySelector(".grid-body");
+    const grid = document.getElementById("screen-grid");
+
+    // Map udid → { iframe, frame } so we can move iframes around.
+    const tileMap = new Map();
+
+    if (devices.length === 0) {
+      grid.innerHTML = '<div class="screen-grid-hint">Không có thiết bị nào được chọn.</div>';
+    } else {
+      for (const d of devices) {
+        grid.appendChild(buildTile(d));
+      }
+    }
+
+    function buildTile(device) {
+      const slot = device.port - 9990;
+      const vncHtmlPort = 5902 + slot * 10;
+      const vncWsPort = 15900 + slot * 10;
+
+      // Use view_only=false from the start so we don't need to reload
+      const vncUrl =
+        `http://localhost:${vncHtmlPort}/novnc/vnc.html` +
+        `?autoconnect=true&host=localhost&port=${vncWsPort}` +
+        `&encrypt=0&resize=scale&view_only=false&show_dot=false` +
+        `&reconnect=true&reconnect_delay=3000` +
+        `&quality=${QUALITY}&compression=${COMPRESSION}`;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = vncUrl;
+      iframe.className = "screen-grid-iframe";
+      iframe.loading = "lazy";
+      iframe.title = device.label || device.name || device.udid;
+
+      const overlay = document.createElement("div");
+      overlay.className = "screen-grid-overlay";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "screen-grid-name";
+      nameSpan.textContent = device.label || device.name || "iPhone";
+      overlay.appendChild(nameSpan);
+
+      if (device.running_script) {
+        const runSpan = document.createElement("span");
+        runSpan.className = "screen-grid-running";
+        runSpan.textContent = "▶ " + device.running_script;
+        overlay.appendChild(runSpan);
+      }
+
+      const frame = document.createElement("div");
+      frame.className = "screen-grid-frame";
+      frame.appendChild(iframe);
+
+      const tile = document.createElement("div");
+      tile.className = "screen-grid-tile";
+      tile.appendChild(frame);
+      tile.appendChild(overlay);
+
+      // Store reference
+      tileMap.set(device.udid, { iframe, tile });
+
+      // Click tile → zoom in place (no iframe move = no reload)
+      tile.addEventListener("click", () => zoomTile(device));
+
+      return tile;
+    }
+
+    // ─── Zoom: expand tile in-place via CSS (no iframe reload) ────
+    let activeBackdrop = null;
+
+    function zoomTile(device) {
+      const entry = tileMap.get(device.udid);
+      if (!entry || activeBackdrop) return;
+
+      const { iframe, tile } = entry;
+
+      // Create backdrop behind the zoomed tile
+      const backdrop = document.createElement("div");
+      backdrop.className = "popup-backdrop";
+      activeBackdrop = backdrop;
+
+      // Header floating above
+      const header = document.createElement("div");
+      header.className = "popup-header";
+      header.style.cssText = "position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:102;";
+      header.innerHTML = `<span class="popup-title">📺 ${device.label || device.name || "iPhone"}</span>`;
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "btn btn-ghost btn-sm";
+      closeBtn.textContent = "✕ Đóng";
+      closeBtn.addEventListener("click", closeZoom);
+      header.appendChild(closeBtn);
+
+      document.body.appendChild(backdrop);
+      document.body.appendChild(header);
+
+      // Zoom the tile itself using CSS
+      tile.classList.add("tile-zoomed");
+      // Enable pointer-events on iframe so user can control
+      iframe.style.pointerEvents = "auto";
+
+      backdrop.addEventListener("click", closeZoom);
+
+      function closeZoom() {
+        tile.classList.remove("tile-zoomed");
+        iframe.style.pointerEvents = "";
+        backdrop.remove();
+        header.remove();
+        activeBackdrop = null;
+      }
+    }
+  </script>
+</body>
+</html>

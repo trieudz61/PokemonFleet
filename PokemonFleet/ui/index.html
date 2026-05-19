@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PokemonFleet</title>
+  <title>POKEIOSControl</title>
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/theme.css" />
 </head>
@@ -12,9 +12,9 @@
     <!-- Main app shell -->
     <div id="main" class="main">
       <!-- Top bar -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <span class="brand-mini">⚡ PokemonFleet</span>
+      <header class="topbar" data-tauri-drag-region>
+        <div class="topbar-left" data-tauri-drag-region>
+          <span class="brand-mini" data-tauri-drag-region>⚡ POKEIOSControl</span>
           <span class="device-count-badge"><span id="device-count">0</span> devices</span>
         </div>
         <div class="topbar-center">
@@ -29,8 +29,25 @@
           <button id="stop-all-btn" class="btn btn-danger">■ Stop selected</button>
           <button id="refresh-btn" class="btn btn-ghost" title="Refresh device list">↻</button>
         </div>
-        <div class="topbar-right">
+        <div class="topbar-right" data-tauri-drag-region>
           <span id="license-badge" class="license-badge"></span>
+          <div class="window-controls">
+            <button id="win-min" class="win-btn win-min" title="Minimize" aria-label="Minimize">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <rect x="2" y="7" width="12" height="2.5" rx="1" fill="currentColor"/>
+              </svg>
+            </button>
+            <button id="win-max" class="win-btn win-max" title="Maximize" aria-label="Maximize">
+              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+            <button id="win-close" class="win-btn win-close" title="Close" aria-label="Close">
+              <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                <path d="M3.5 3.5 L12.5 12.5 M12.5 3.5 L3.5 12.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -40,6 +57,9 @@
           <input type="checkbox" id="select-all" class="big-check" />
           <span>Select all online</span>
         </label>
+        <button id="view-all-screens-btn" class="btn btn-pikachu btn-sm" title="Xem màn hình các thiết bị đã chọn">
+          📺 View Selected Screens
+        </button>
         <span id="selection-summary" class="selection-summary">0 selected</span>
         <span class="spacer"></span>
         <button id="bootstrap-help-btn" class="btn btn-link" title="Setup new device guide">
