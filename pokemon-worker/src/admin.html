@@ -1453,7 +1453,7 @@ document.addEventListener('keydown', e => {
 });
 
 function loadLogs() {
-  api('GET', '/admin/logs?limit=200').then(d => {
+  api('GET', '/admin/logs?limit=50').then(d => {
     if (!d.ok) return;
     const logs = d.logs || [];
     if (logs.length === 0) {
