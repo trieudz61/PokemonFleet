@@ -426,10 +426,33 @@ body::before {
 
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .header { padding: 16px 20px; }
-  .hero { padding: 50px 20px 40px; }
-  .section { padding: 50px 20px; }
+  .header { padding: 12px 16px; }
+  .logo-ball { width: 32px; height: 32px; }
+  .logo-text { font-size: 1.1rem; }
+  .hero { padding: 36px 16px 30px; }
+  .hero h1 { font-size: 1.8rem; }
+  .hero p { font-size: 0.9rem; margin-bottom: 24px; }
+  .hero-badge { font-size: 0.7rem; padding: 6px 12px; margin-bottom: 16px; }
+  .hero-buttons { gap: 10px; }
+  .btn { padding: 10px 18px; font-size: 0.8rem; }
+  .hero-screenshot { max-width: 100%; margin-top: 30px; border-radius: 12px; }
+  .section { padding: 40px 16px; }
+  .section-title { font-size: 1.5rem; }
+  .section-subtitle { font-size: 0.85rem; margin-bottom: 28px; }
+  .features-grid { grid-template-columns: 1fr; gap: 14px; }
+  .feature-card { padding: 20px; }
+  .feature-card h3 { font-size: 1rem; }
+  .feature-card p { font-size: 0.82rem; }
+  .steps { grid-template-columns: 1fr; gap: 14px; }
+  .step { padding: 20px; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 14px; }
+  .price-card { padding: 24px; }
+  .price-amount { font-size: 1.8rem; }
   .nav-links a:not(.btn-cta) { display: none; }
+  .nav-links .btn-cta { padding: 8px 14px; font-size: 0.78rem; }
+  .deco-ball { display: none; }
+  body::before { display: none; }
+  .footer { padding: 28px 16px; }
 }
 </style>
 </head>
