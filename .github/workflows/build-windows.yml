@@ -1,11 +1,6 @@
 name: Build Windows installer
-
-# Manually trigger or push a tag like v0.1.0 to release.
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
 
 permissions:
   contents: write
@@ -13,69 +8,6 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      # ── Toolchains ────────────────────────────────────────────────────────
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      # Cache Cargo + npm so successive runs are fast.
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: PokemonFleet/src-tauri
-
-      # ── libimobiledevice binaries (idevice_id.exe + iproxy.exe) ───────────
-      # libimobiledevice doesn't ship official Windows builds, so we use the
-      # imobiledevice-net distribution (MIT-licensed). The two binaries are
-      # ~6 MB total and live next to the app's exe in `binaries/`.
-      - name: Download libimobiledevice for Windows
-        shell: pwsh
-        run: |
-          $binDir = "PokemonFleet/src-tauri/binaries"
-          New-Item -ItemType Directory -Force -Path $binDir | Out-Null
-          $url = "https://github.com/libimobiledevice-win32/imobiledevice-net/releases/download/v1.3.17/libimobiledevice.1.3.17-r1122-win-x64.zip"
-          $zip = "$env:RUNNER_TEMP\\imd.zip"
-          Invoke-WebRequest -Uri $url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath "$env:RUNNER_TEMP/imd" -Force
-          # Copy the binaries we actually use. iproxy uses several DLLs so we
-          # take the whole bin/ contents to be safe.
-          Copy-Item "$env:RUNNER_TEMP/imd/x64/*.exe" $binDir -Force
-          Copy-Item "$env:RUNNER_TEMP/imd/x64/*.dll" $binDir -Force
-          Get-ChildItem $binDir | Format-Table Name, Length
-
-      # ── Frontend ──────────────────────────────────────────────────────────
-      - name: Install npm deps
-        working-directory: PokemonFleet
-        run: npm ci
-
-      # ── Tauri build ───────────────────────────────────────────────────────
-      - name: Build MSI + NSIS
-        working-directory: PokemonFleet
-        run: npm run tauri build -- --bundles msi,nsis
-
-      # ── Upload installers ─────────────────────────────────────────────────
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: PokemonFleet-windows
-          path: |
-            PokemonFleet/src-tauri/target/release/bundle/msi/*.msi
-            PokemonFleet/src-tauri/target/release/bundle/nsis/*.exe
-
-      # If this run was triggered by a tag, attach to a GitHub Release.
-      - name: Publish Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            PokemonFleet/src-tauri/target/release/bundle/msi/*.msi
-            PokemonFleet/src-tauri/target/release/bundle/nsis/*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "hello from windows"
