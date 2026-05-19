@@ -347,21 +347,23 @@ body::before {
 }
 .step p { color: var(--text2); font-size: 0.85rem; line-height: 1.5; }
 .step-video {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 5px 12px;
-  background: var(--pokeball-red);
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #FF6B6B, #EE1515);
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   border-radius: var(--radius-pill);
   border: 2px solid var(--border);
   text-decoration: none;
   box-shadow: 2px 2px 0 var(--border);
   transition: all 0.15s;
+  z-index: 2;
 }
 .step-video:hover {
-  transform: translate(-1px, -1px);
+  transform: translate(-1px, -1px) scale(1.05);
   box-shadow: 3px 3px 0 var(--border);
 }
 
@@ -553,22 +555,22 @@ body::before {
     <div class="step">
       <h4>Jailbreak iPhone</h4>
       <p>Jailbreak iPhone (6/6+/7/7+/8/8+/X) bằng Dopamine. Yêu cầu iOS 15 hoặc 16.</p>
-      <a href="#" class="step-video">▶ Click để xem video</a>
+      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
     <div class="step">
       <h4>Cài POKEIOSControl</h4>
       <p>Tải app từ link admin gửi. Cài trên Windows. Cắm iPhone qua USB, bấm Trust trên điện thoại.</p>
-      <a href="#" class="step-video">▶ Click để xem video</a>
+      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
     <div class="step">
       <h4>Setup & Config</h4>
       <p>Bấm Setup để cài tool lên iPhone. Điền LICENSE_KEY và MAIL_SERVER vào Config.</p>
-      <a href="#" class="step-video">▶ Click để xem video</a>
+      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
     <div class="step">
       <h4>Chạy Script</h4>
       <p>Chọn script, tick máy cần chạy, bấm Run. Xong! Ngồi xem log hoặc đi uống cà phê.</p>
-      <a href="#" class="step-video">▶ Click để xem video</a>
+      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
   </div>
 </section>
