@@ -835,3 +835,67 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
+
+/* ─── Data Manager ─── */
+.data-manager {
+  display: flex;
+  flex-direction: column;
+  height: 60vh;
+  gap: 10px;
+}
+.data-script-select {
+  padding: 8px 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.data-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.data-tab {
+  padding: 8px 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.data-tab:hover { background: #fff3d0; }
+.data-tab.active {
+  background: var(--pokemon-yellow, #FFCC00);
+  box-shadow: 2px 2px 0px var(--border-strong);
+}
+.data-textarea {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-md, 12px);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: none;
+  background: #fffbf0;
+  color: var(--text-strong);
+}
+.data-textarea:focus {
+  outline: none;
+  border-color: var(--pokemon-yellow, #FFCC00);
+  box-shadow: 0 0 0 3px rgba(255,204,0,0.2);
+}
+.data-textarea[readonly] {
+  background: #f5f5f0;
+  color: #666;
+}
+.data-status {
+  font-size: 0.72rem;
+  color: var(--text-muted, #888);
+  padding: 4px 0;
+}

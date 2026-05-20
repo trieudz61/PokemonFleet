@@ -36,19 +36,8 @@ export async function openConfigDialog(device, allSelected = []) {
     ]));
   }
 
-  // Custom-key support — anything user adds beyond known keys is preserved.
+  // Preserve any extra keys in the file (not shown to user) so they don't get wiped on save.
   const extras = Object.entries(config).filter(([k]) => !KNOWN_KEYS.find(([kk]) => kk === k));
-  if (extras.length > 0) {
-    formBody.appendChild(el("div", { class: "section-title" }, ["Other keys"]));
-    for (const [key, value] of extras) {
-      const input = el("input", { type: "text", value, "data-cfg-key": key, autocomplete: "off" });
-      inputs[key] = input;
-      formBody.appendChild(el("div", { class: "form-row" }, [
-        el("label", {}, [key]),
-        input,
-      ]));
-    }
-  }
 
   const applyAll = el("input", { type: "checkbox" });
   if (allSelected.length > 1) {
@@ -62,6 +51,9 @@ export async function openConfigDialog(device, allSelected = []) {
     class: "btn btn-success",
     onclick: async () => {
       const newCfg = {};
+      // Preserve extra keys user doesn't see
+      for (const [k, v] of extras) newCfg[k] = v;
+      // Overwrite with user-edited fields
       for (const [key, input] of Object.entries(inputs)) {
         newCfg[key] = input.value;
       }

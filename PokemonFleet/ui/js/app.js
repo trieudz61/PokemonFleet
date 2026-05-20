@@ -32,7 +32,7 @@ import { $, el, toast, showModal } from "./utils.js";
 import { DeviceTable } from "./components/DeviceTable.js";
 import { ScriptPicker } from "./components/ScriptPicker.js";
 import { openConfigDialog } from "./components/ConfigDialog.js";
-import { openDataViewer } from "./components/DataViewer.js";
+import { openDataManager } from "./components/DataManager.js";
 import { openBootstrapWizard } from "./components/BootstrapWizard.js";
 import { openLogModal } from "./components/LogModal.js";
 import { openScreenView } from "./components/ScreenView.js";
@@ -233,7 +233,7 @@ async function handleAction(kind, device) {
       openConfigDialog(device, selected.length > 1 ? selected : []);
       break;
     }
-    case "data":  openDataViewer(device); break;
+    case "data":  openDataManager(device); break;
     case "log":   openLogModal(device, state.logBuffer); break;
     case "setup": openBootstrapWizard(device); break;
     case "info":  openInfoDialog(device); break;
