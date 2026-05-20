@@ -356,11 +356,11 @@ input:focus, select:focus, textarea:focus {
 
 .col-ord    { width: 56px; text-align: center; }
 .col-check  { width: 56px; text-align: center; }
-.col-name   { width: 240px; }
-.col-status { width: 120px; }
-.col-running { width: 200px; }
-.col-license { width: 170px; }
-.col-actions { width: 360px; }
+.col-name   { width: 200px; }
+.col-status { width: 100px; }
+.col-running { width: 140px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-license { width: 120px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-actions { width: 340px; }
 
 .device-row { cursor: pointer; }
 .device-row td.col-check, .device-row td.col-ord { text-align: center; }
@@ -1044,4 +1044,218 @@ input:focus, select:focus, textarea:focus {
   border-color: #1F1F1F;
   font-weight: 700;
   box-shadow: 1px 1px 0px #1F1F1F;
+}
+
+/* ─── Data Manager Line-Numbered Editor ─── */
+.dm-editor-wrap {
+  flex: 1;
+  display: flex;
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fffbf0;
+}
+.dm-line-nums {
+  width: 42px;
+  padding: 12px 0;
+  background: #f5f0e0;
+  border-right: 1px solid #e0dcc8;
+  overflow: hidden;
+  user-select: none;
+  flex-shrink: 0;
+}
+.dm-line-num {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: right;
+  padding-right: 8px;
+  color: #aaa;
+}
+.dm-textarea {
+  flex: 1;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  line-height: 20px;
+  resize: none;
+  background: transparent;
+  color: var(--text-strong);
+  white-space: pre;
+  overflow: auto;
+  outline: none;
+}
+.dm-textarea:focus {
+  box-shadow: none;
+}
+
+/* ─── Data Manager Table View ─── */
+.dm-table-wrap {
+  flex: 1;
+  overflow: auto;
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  background: #fff;
+}
+.dm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+}
+.dm-table td {
+  padding: 6px 10px;
+  border: 1px solid #e8e4d8;
+  min-width: 80px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+  transition: background 0.1s;
+}
+.dm-table td:focus {
+  background: #fff8d6;
+  white-space: normal;
+  word-break: break-all;
+}
+.dm-table tr:nth-child(even) td { background: #fdfbf4; }
+.dm-table tr:hover td { background: #fff3d0; }
+
+/* ─── Data Manager Table Headers ─── */
+.dm-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.dm-th-row, .dm-th-col {
+  background: #f0ead6;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: #666;
+  border: 1px solid #e0dcc8;
+  white-space: nowrap;
+}
+.dm-th-row {
+  width: 36px;
+  min-width: 36px;
+}
+.dm-td-row {
+  background: #f5f0e0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  width: 36px;
+  min-width: 36px;
+  border: 1px solid #e0dcc8;
+  user-select: none;
+}
+
+/* ─── Data Manager Editor Placeholder ─── */
+.dm-editor-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 2px dashed #e0dcc8;
+  border-radius: 12px;
+  background: #fdfbf4;
+}
+
+/* ─── Data Manager Full-Screen Modal ─── */
+#dm-fullscreen-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg, #f8f6f0);
+  /* Default: centered with margin */
+  top: 40px; left: 60px; right: 60px; bottom: 40px;
+  border: 3px solid var(--border-strong, #1F1F1F);
+  border-radius: 16px;
+  box-shadow: 0 16px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+#dm-fullscreen-modal.dm-fs-maximized {
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 0;
+}
+.dm-fs-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #fff8e7 0%, #fff3d0 100%);
+  border-bottom: 2px solid var(--border-strong, #1F1F1F);
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+}
+.dm-fs-titlebar h1 {
+  font-family: var(--font-display, 'Nunito', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.dm-fs-btns {
+  display: flex;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+.dm-fs-body {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  overflow: hidden;
+}
+.dm-fs-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 2px solid var(--border-strong, #1F1F1F);
+  background: var(--bg-elev-2, #f5f0e0);
+  flex-shrink: 0;
+}
+/* Confirm dialog inside modal */
+#dm-fullscreen-modal .dm-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 58, 95, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 16px;
+}
+#dm-fullscreen-modal .dm-confirm-box {
+  background: #fff;
+  border: 3px solid #1F1F1F;
+  border-radius: 18px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: 0 8px 0 #c9d8ec, 0 12px 40px rgba(0,0,0,0.2);
+  max-width: 340px;
+}
+#dm-fullscreen-modal .dm-confirm-icon { font-size: 36px; margin-bottom: 10px; }
+#dm-fullscreen-modal .dm-confirm-msg {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 18px;
+  color: #1F1F1F;
+}
+#dm-fullscreen-modal .dm-confirm-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }

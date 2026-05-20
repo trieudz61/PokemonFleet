@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POKEIOSControl — Data Manager</title>
+<link rel="stylesheet" href="styles/theme.css">
+<link rel="stylesheet" href="styles/main.css">
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg, #f8f6f0);
+  font-family: var(--font-body, 'Inter', sans-serif);
+}
+.dm-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.dm-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #fff8e7 0%, #fff3d0 100%);
+  border-bottom: 2px solid var(--border-strong, #1F1F1F);
+  -webkit-app-region: drag;
+}
+.dm-titlebar h1 {
+  font-family: var(--font-display, 'Nunito', sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.dm-titlebar-btns {
+  display: flex;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+.dm-main {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  overflow: hidden;
+}
+.dm-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 2px solid var(--border-strong, #1F1F1F);
+  background: var(--bg-elev-2, #f5f0e0);
+}
+/* Confirm dialog */
+.dm-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 58, 95, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.dm-confirm-box {
+  background: #fff;
+  border: 3px solid #1F1F1F;
+  border-radius: 18px;
+  padding: 28px 32px;
+  text-align: center;
+  box-shadow: 0 8px 0 #c9d8ec, 0 12px 40px rgba(0,0,0,0.2);
+  max-width: 340px;
+}
+.dm-confirm-icon { font-size: 36px; margin-bottom: 10px; }
+.dm-confirm-msg {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 18px;
+  color: #1F1F1F;
+}
+.dm-confirm-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+<div class="dm-page">
+  <div class="dm-titlebar">
+    <h1 id="dm-title">🗂️ Data Manager</h1>
+    <div class="dm-titlebar-btns">
+      <button class="btn btn-ghost btn-sm" id="btn-zoom" title="Zoom">⬜</button>
+      <button class="btn btn-ghost btn-sm" id="btn-close" title="Đóng">✕</button>
+    </div>
+  </div>
+  <div class="dm-main">
+    <div class="dm-sidebar" id="dm-sidebar"></div>
+    <div class="dm-editor" id="dm-editor">
+      <div class="dm-editor-placeholder" id="dm-placeholder">👈 Chọn thư mục → chọn file để xem/sửa</div>
+      <div class="dm-editor-wrap" id="dm-editor-wrap" style="display:none">
+        <div class="dm-line-nums" id="dm-line-nums"></div>
+        <textarea class="dm-textarea" id="dm-textarea" spellcheck="false" wrap="off" placeholder="Nhập nội dung..."></textarea>
+      </div>
+      <div class="dm-table-wrap" id="dm-table-wrap" style="display:none"></div>
+      <div class="dm-status" id="dm-status">Chọn file bên trái</div>
+    </div>
+  </div>
+  <div class="dm-footer">
+    <button class="btn btn-primary btn-sm" id="btn-save">🌟 Save</button>
+    <button class="btn btn-secondary btn-sm" id="btn-pull">🔄 Pull</button>
+    <button class="btn btn-ghost btn-sm" id="btn-clear">🧹 Clear</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-ghost btn-sm" id="btn-toggle">📊 Dạng Bảng</button>
+  </div>
+
+  <!-- Custom confirm dialog -->
+  <div class="dm-confirm-backdrop" id="dm-confirm" style="display:none">
+    <div class="dm-confirm-box">
+      <div class="dm-confirm-icon">💾</div>
+      <p class="dm-confirm-msg">File đã thay đổi. Lưu trước khi thoát?</p>
+      <div class="dm-confirm-btns">
+        <button class="btn btn-primary btn-sm" id="confirm-yes">Lưu & Thoát</button>
+        <button class="btn btn-ghost btn-sm" id="confirm-no">Không lưu</button>
+        <button class="btn btn-ghost btn-sm" id="confirm-cancel">Hủy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Data Manager — standalone window version.
+// Reads device info from localStorage, uses Tauri invoke for file I/O.
+
+const T = window.__TAURI__;
+const invoke = T?.core?.invoke || T?.tauri?.invoke || T?.invoke;
+
+const deviceData = JSON.parse(localStorage.getItem("__pkm_data_device") || "null");
+if (!deviceData) {
+  document.getElementById("dm-placeholder").textContent = "❌ Không có thông tin thiết bị.";
+}
+
+const EXPECTED_FILES = ["account.txt", "Success.txt", "Failed.txt"];
+
+let activePath = null;
+let lastLoadedContent = "";
+let tableMode = false;
+let folders = [];
+
+const sidebar = document.getElementById("dm-sidebar");
+const placeholder = document.getElementById("dm-placeholder");
+const editorWrap = document.getElementById("dm-editor-wrap");
+const tableWrap = document.getElementById("dm-table-wrap");
+const lineNums = document.getElementById("dm-line-nums");
+const textarea = document.getElementById("dm-textarea");
+const statusBar = document.getElementById("dm-status");
+const toggleBtn = document.getElementById("btn-toggle");
+
+// Title
+if (deviceData) {
+  document.getElementById("dm-title").textContent = `🗂️ Data · ${deviceData.label || deviceData.name}`;
+}
+
+// ─── API wrappers ───
+async function apiListFiles(udid) { return invoke("list_files", { udid }); }
+async function apiReadFile(udid, name) { return invoke("read_file", { udid, name }); }
+async function apiWriteFile(udid, name, content) { return invoke("write_file", { udid, name, content }); }
+
+// ─── Init ───
+async function init() {
+  if (!deviceData) return;
+  try {
+    const result = await apiListFiles(deviceData.udid);
+    const files = result.files || result || [];
+    folders = files.filter(f => f.type === "folder").map(f => f.name).filter(n => !n.startsWith("."));
+  } catch (e) {
+    statusBar.textContent = "Lỗi: " + e;
+    return;
+  }
+  if (folders.length === 0) {
+    placeholder.textContent = "Chưa có thư mục data nào trên thiết bị.";
+    return;
+  }
+  renderSidebar(folders.length === 1 ? 0 : -1);
+}
+
+// ─── Sidebar ───
+let openFolderIdx = -1;
+
+function renderSidebar(forceOpen) {
+  if (forceOpen !== undefined) openFolderIdx = forceOpen;
+  sidebar.innerHTML = "";
+  folders.forEach((folder, fi) => {
+    const isOpen = fi === openFolderIdx;
+    const card = document.createElement("div");
+    card.className = `dm-folder-card${isOpen ? " open" : ""}`;
+
+    const header = document.createElement("button");
+    header.className = "dm-folder-header";
+    header.innerHTML = `<span class="dm-folder-icon">🎮</span><span class="dm-folder-label">${folder}</span><span class="dm-folder-arrow">▾</span>`;
+    header.onclick = () => { openFolderIdx = isOpen ? -1 : fi; renderSidebar(); };
+
+    const fileList = document.createElement("div");
+    fileList.className = "dm-file-list";
+    EXPECTED_FILES.forEach(fname => {
+      const path = `${folder}/${fname}`;
+      const btn = document.createElement("button");
+      btn.className = `dm-file-btn${activePath === path ? " active" : ""}`;
+      btn.textContent = `🗒️ ${fname}`;
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        activePath = path;
+        sidebar.querySelectorAll(".dm-file-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadFile(folder, fname);
+      };
+      fileList.appendChild(btn);
+    });
+
+    card.appendChild(header);
+    card.appendChild(fileList);
+    sidebar.appendChild(card);
+  });
+}
+
+// ─── Load File ───
+async function loadFile(folder, fname) {
+  const path = `${folder}/${fname}`;
+  placeholder.style.display = "none";
+  if (!tableMode) editorWrap.style.display = "flex";
+  textarea.value = "";
+  textarea.placeholder = `Đang tải ${path}...`;
+  statusBar.textContent = `🗂️ ${folder} › 🗒️ ${fname}`;
+
+  try {
+    const content = await apiReadFile(deviceData.udid, path);
+    if (typeof content === "string" && content.startsWith("{") && content.includes('"error"')) {
+      textarea.value = "";
+      textarea.placeholder = "File chưa tồn tại — nhập nội dung rồi bấm Save để tạo";
+      statusBar.textContent = `${path} · chưa có dữ liệu`;
+    } else {
+      textarea.value = content;
+      textarea.placeholder = "Nhập nội dung...";
+      const lines = (content || "").split("\n").length;
+      statusBar.textContent = `🗂️ ${folder} › 🗒️ ${fname} · ${lines} dòng`;
+    }
+  } catch (e) {
+    textarea.value = "";
+    textarea.placeholder = "File chưa tồn tại — nhập nội dung rồi bấm Save để tạo";
+    statusBar.textContent = `${path}: chưa tồn tại`;
+  }
+  updateLineNums();
+  lastLoadedContent = textarea.value;
+  if (tableMode) renderTable();
+}
+
+// ─── Save ───
+async function saveFile() {
+  if (!activePath) return;
+  try {
+    // If in table mode, sync table back to textarea first
+    if (tableMode) textarea.value = tableToText();
+    await apiWriteFile(deviceData.udid, activePath, textarea.value);
+    statusBar.textContent = `🌟 Đã lưu ${activePath}`;
+    const [folder, fname] = activePath.split("/");
+    await loadFile(folder, fname);
+  } catch (e) {
+    statusBar.textContent = `Lỗi lưu: ${e}`;
+  }
+}
+
+// ─── Clear ───
+async function clearFile() {
+  if (!activePath) return;
+  if (!confirm(`Xóa toàn bộ nội dung ${activePath}?`)) return;
+  textarea.value = "";
+  await saveFile();
+}
+
+// ─── Line Numbers ───
+function updateLineNums() {
+  const lines = textarea.value.split("\n").length;
+  lineNums.innerHTML = Array.from({ length: lines }, (_, i) =>
+    `<div class="dm-line-num">${i + 1}</div>`
+  ).join("");
+}
+textarea.addEventListener("input", updateLineNums);
+textarea.addEventListener("scroll", () => { lineNums.scrollTop = textarea.scrollTop; });
+
+// ─── Table View ───
+function renderTable() {
+  const text = textarea.value || "";
+  const rows = text.split("\n").filter(l => l.trim());
+  if (rows.length === 0) {
+    tableWrap.innerHTML = '<div style="padding:20px;color:#888;text-align:center">Không có dữ liệu</div>';
+    return;
+  }
+  const maxCols = Math.max(...rows.map(r => r.split("|").length));
+  const colLetter = (i) => String.fromCharCode(65 + i);
+  let html = '<table class="dm-table"><thead><tr><th class="dm-th-row">#</th>';
+  for (let ci = 0; ci < maxCols; ci++) html += `<th class="dm-th-col">${colLetter(ci)}</th>`;
+  html += '</tr></thead><tbody>';
+  rows.forEach((row, ri) => {
+    html += `<tr><td class="dm-td-row">${ri + 1}</td>`;
+    const cols = row.split("|");
+    for (let ci = 0; ci < maxCols; ci++) {
+      html += `<td contenteditable="true">${escHtml(cols[ci] || "")}</td>`;
+    }
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  tableWrap.innerHTML = html;
+}
+
+function tableToText() {
+  const trs = tableWrap.querySelectorAll("tbody tr");
+  const lines = [];
+  trs.forEach(tr => {
+    const cells = Array.from(tr.querySelectorAll("td:not(.dm-td-row)")).map(td => td.textContent);
+    while (cells.length > 0 && cells[cells.length - 1] === "") cells.pop();
+    if (cells.length > 0) lines.push(cells.join("|"));
+  });
+  return lines.join("\n");
+}
+
+function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+function toggleTable() {
+  tableMode = !tableMode;
+  if (tableMode) {
+    renderTable();
+    editorWrap.style.display = "none";
+    tableWrap.style.display = "block";
+    toggleBtn.textContent = "📝 Dạng Text";
+  } else {
+    textarea.value = tableToText();
+    updateLineNums();
+    editorWrap.style.display = "flex";
+    tableWrap.style.display = "none";
+    toggleBtn.textContent = "📊 Dạng Bảng";
+  }
+}
+
+// ─── Button handlers ───
+document.getElementById("btn-save").onclick = saveFile;
+document.getElementById("btn-pull").onclick = () => activePath && loadFile(...activePath.split("/"));
+document.getElementById("btn-clear").onclick = clearFile;
+toggleBtn.onclick = toggleTable;
+
+// Zoom (maximize/restore)
+document.getElementById("btn-zoom").onclick = async () => {
+  const win = T?.webviewWindow?.getCurrent?.() || T?.window?.getCurrent?.() || T?.window?.appWindow;
+  if (!win) return;
+  const maximized = await win.isMaximized();
+  if (maximized) { await win.unmaximize(); }
+  else { await win.maximize(); }
+};
+// Custom confirm dialog
+const confirmEl = document.getElementById("dm-confirm");
+function showConfirm() {
+  return new Promise((resolve) => {
+    confirmEl.style.display = "flex";
+    document.getElementById("confirm-yes").onclick = () => { confirmEl.style.display = "none"; resolve("save"); };
+    document.getElementById("confirm-no").onclick = () => { confirmEl.style.display = "none"; resolve("discard"); };
+    document.getElementById("confirm-cancel").onclick = () => { confirmEl.style.display = "none"; resolve("cancel"); };
+  });
+}
+
+async function closeWindow() {
+  const currentWindow =
+    T?.webviewWindow?.getCurrent?.() ||
+    T?.window?.getCurrent?.() ||
+    T?.window?.appWindow;
+  if (currentWindow) {
+    await currentWindow.close();
+  } else {
+    try { await invoke("plugin:window|close"); } catch {}
+    window.close();
+  }
+}
+
+document.getElementById("btn-close").onclick = async () => {
+  if (activePath && textarea.value !== lastLoadedContent) {
+    const result = await showConfirm();
+    if (result === "save") { await saveFile(); await closeWindow(); }
+    else if (result === "discard") { await closeWindow(); }
+    // "cancel" → do nothing, stay open
+  } else {
+    await closeWindow();
+  }
+};
+
+// Ctrl+S
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    if (activePath) saveFile();
+  }
+});
+
+// Start
+init();
+</script>
+</body>
+</html>

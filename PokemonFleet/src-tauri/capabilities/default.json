@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2/permissions/2",
   "identifier": "default",
   "description": "Default permissions for PokemonFleet",
-  "windows": ["main", "screen-grid"],
+  "windows": ["main", "screen-grid", "data-manager"],
   "remote": {
     "urls": ["http://**", "https://**"]
   },
@@ -21,6 +21,8 @@
     "core:window:allow-start-dragging",
     "core:window:allow-minimize",
     "core:window:allow-toggle-maximize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
     "core:window:allow-close",
     "core:window:allow-is-maximized"
   ]

@@ -77,7 +77,7 @@ export function toast(message, type = "info", durationMs = 3000) {
 
 // ─── Modal ─────────────────────────────────────────────────────────────────
 
-export function showModal({ title, body, footer, width, className }) {
+export function showModal({ title, body, footer, width, className, onClose }) {
   const root = $("#modal-root");
   const back = el("div", { class: "modal-backdrop" });
   const modal = el("div", { class: `modal${className ? ` ${className}` : ""}` });
@@ -98,7 +98,10 @@ export function showModal({ title, body, footer, width, className }) {
   back.append(modal);
   root.append(back);
 
-  function close() { back.remove(); }
+  async function close() {
+    if (onClose) await onClose();
+    back.remove();
+  }
 
   back.addEventListener("click", (e) => {
     if (e.target === back) close();
