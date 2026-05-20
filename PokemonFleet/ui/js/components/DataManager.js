@@ -20,11 +20,11 @@ export async function openDataManager(device) {
   let folders = [];
   try {
     const result = await api.listFiles(device.udid);
-    // result is typically { files: [{name, is_dir, size}, ...] } or array
+    // IOSControl returns { success, files: [{name, type:"folder", children:[...]}, ...] }
     const files = result.files || result || [];
     folders = files
-      .filter(f => f.is_dir || f.type === "dir" || f.isDir)
-      .map(f => f.name || f.filename)
+      .filter(f => f.type === "folder")
+      .map(f => f.name)
       .filter(name => !name.startsWith("."));
   } catch (e) {
     toast("Không lấy được danh sách file: " + e, "error");
@@ -77,7 +77,7 @@ export async function openDataManager(device) {
             activePath = path;
             sidebar.querySelectorAll(".dm-file-btn").forEach(b => b.classList.remove("active"));
             fileBtn.classList.add("active");
-            loadFile(folder, fname);
+            loadFile(folder, fname); // always pull fresh
           },
         }, [`🗒️ ${fname}`]);
         fileList.appendChild(fileBtn);
@@ -120,6 +120,9 @@ export async function openDataManager(device) {
     try {
       await api.writeFile(device.udid, activePath, contentArea.value);
       toast(`🌟 Đã lưu ${activePath}`, "success");
+      // Re-pull to confirm write
+      const [folder, fname] = activePath.split("/");
+      await loadFile(folder, fname);
     } catch (e) {
       toast(`Lỗi lưu: ${e}`, "error");
     }
