@@ -44,7 +44,7 @@ const state = {
   devices: [],
   table: null,
   picker: null,
-  fastRun: false,                    // true → bypass loader menu
+  fastRun: true,                     // default on → bypass loader menu
   logBuffer: new Map(), // udid -> string[]
 };
 
@@ -410,7 +410,7 @@ async function boot() {
   });
 
   state.picker = new ScriptPicker($("#script-picker"));
-  await state.picker.loadFromWorker();
+  await state.picker.setMode(state.fastRun ? "fast" : "loader");
 
   // Buttons.
   $("#run-all-btn").addEventListener("click", runFleet);
