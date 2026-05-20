@@ -580,24 +580,19 @@ async function handleRevokeFleetLicense(id, env) {
 // ═══════════════════════════════════════════
 
 async function handleDataRegistry(env) {
+  // data_files column may not exist yet — only select known columns.
   const rows = await env.DB.prepare(
-    "SELECT script_id, name, data_files FROM scripts ORDER BY name"
+    "SELECT script_id, name FROM scripts ORDER BY name"
   ).all();
 
   const registry = {};
   for (const s of (rows.results || [])) {
-    let files;
-    try {
-      files = s.data_files ? JSON.parse(s.data_files) : null;
-    } catch(e) { files = null; }
-
-    if (!files || files.length === 0) {
-      files = [
-        { name: "account.txt", desc: "Tài khoản (TK|MK)", editable: true },
-        { name: "Success.txt", desc: "Kết quả thành công", editable: false },
-        { name: "Failed.txt", desc: "Kết quả lỗi", editable: false },
-      ];
-    }
+    // Default data files per script. Later can be customized via DB column.
+    const files = [
+      { name: "account.txt", desc: "Tài khoản (TK|MK)", editable: true },
+      { name: "Success.txt", desc: "Kết quả thành công", editable: false },
+      { name: "Failed.txt", desc: "Kết quả lỗi", editable: false },
+    ];
     registry[s.script_id] = { label: s.name || s.script_id, files };
   }
 
