@@ -899,3 +899,149 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-muted, #888);
   padding: 4px 0;
 }
+
+/* ─── Data Manager Folders ─── */
+.data-folders {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.data-folder-tab {
+  padding: 8px 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+.data-folder-tab:hover { background: #ffe0e0; }
+.data-folder-tab.active {
+  background: linear-gradient(135deg, #EE1515, #CC0000);
+  color: white;
+  box-shadow: 2px 2px 0px var(--border-strong);
+}
+
+/* ─── Data Manager Accordion ─── */
+.dm-container {
+  display: flex;
+  gap: 14px;
+  height: 62vh;
+}
+.dm-sidebar {
+  width: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 8px;
+}
+.dm-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dm-textarea {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: none;
+  background: #fffbf0;
+  color: var(--text-strong);
+}
+.dm-textarea:focus {
+  outline: none;
+  border-color: #FFCC00;
+  box-shadow: 0 0 0 3px rgba(255,204,0,0.2);
+}
+.dm-status {
+  font-size: 0.72rem;
+  color: #888;
+  padding: 2px 4px;
+}
+
+/* Folder card */
+.dm-folder-card {
+  border: 2px solid var(--border-strong);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 2px 2px 0px var(--border-strong);
+  transition: box-shadow 0.15s;
+}
+.dm-folder-card:hover {
+  box-shadow: 3px 3px 0px var(--border-strong);
+}
+.dm-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: linear-gradient(180deg, #fff8e7 0%, #fff3d0 100%);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  transition: background 0.15s;
+}
+.dm-folder-header:hover { background: #fff0c0; }
+.dm-folder-icon { font-size: 1.1rem; }
+.dm-folder-label { flex: 1; }
+.dm-folder-arrow {
+  transition: transform 0.2s;
+  font-size: 0.7rem;
+  color: #888;
+}
+.dm-folder-card.open .dm-folder-arrow { transform: rotate(180deg); }
+.dm-folder-card.open .dm-folder-header {
+  background: linear-gradient(180deg, #FFCC00 0%, #FFB800 100%);
+}
+
+/* File list (hidden by default, shown when .open) */
+.dm-file-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  padding: 0 8px;
+}
+.dm-folder-card.open .dm-file-list {
+  max-height: 200px;
+  padding: 8px;
+}
+.dm-file-btn {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  margin-bottom: 4px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #f9f9f4;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: all 0.12s;
+}
+.dm-file-btn:hover {
+  background: #fff3d0;
+  border-color: #FFCC00;
+}
+.dm-file-btn.active {
+  background: #EE1515;
+  color: white;
+  border-color: #1F1F1F;
+  font-weight: 700;
+  box-shadow: 1px 1px 0px #1F1F1F;
+}

@@ -1,29 +1,14 @@
-// Data Manager — per-script file viewer/editor.
+// Data Manager — dynamic folder-based file viewer/editor.
 //
-// Fetches the data registry from the worker, then for each file:
-//   - Pull content from iPhone via /api/scripts/download?name=<file>
-//   - Push content back via /api/scripts/save (editable files only)
-//
-// UI: modal with tab buttons (1 per file), textarea, action buttons.
+// Fetches folder list from iPhone's /api/scripts/files endpoint.
+// Shows only directories as accordion items, files inside each as tabs.
+// All files editable. Ctrl+S to save.
 
 import { el, showModal, toast } from "../utils.js";
 import * as api from "../api.js";
 
-const REGISTRY_URL = "https://pokemon.ioscontrol.com/api/scripts/data-registry";
-
-let registryCache = null;
-
-async function fetchRegistry() {
-  if (registryCache) return registryCache;
-  try {
-    const res = await fetch(REGISTRY_URL, { cache: "no-store" });
-    const data = await res.json();
-    if (data.ok) registryCache = data.registry;
-  } catch (e) {
-    console.warn("Failed to fetch data registry:", e);
-  }
-  return registryCache || {};
-}
+// Standard data files we expect inside each script folder
+const EXPECTED_FILES = ["account.txt", "Success.txt", "Failed.txt"];
 
 export async function openDataManager(device) {
   if (!device.online || !device.port) {
@@ -31,124 +16,154 @@ export async function openDataManager(device) {
     return;
   }
 
-  const registry = await fetchRegistry();
-
-  // Determine which script's files to show.
-  // Use the first script in registry (most common case: 1 script).
-  const scriptIds = Object.keys(registry);
-  if (scriptIds.length === 0) {
-    toast("Chưa có script nào trên server.", "error");
+  // Fetch file list from iPhone to discover folders
+  let folders = [];
+  try {
+    const result = await api.listFiles(device.udid);
+    // result is typically { files: [{name, is_dir, size}, ...] } or array
+    const files = result.files || result || [];
+    folders = files
+      .filter(f => f.is_dir || f.type === "dir" || f.isDir)
+      .map(f => f.name || f.filename)
+      .filter(name => !name.startsWith("."));
+  } catch (e) {
+    toast("Không lấy được danh sách file: " + e, "error");
     return;
   }
 
-  // Build tab UI
-  const container = el("div", { class: "data-manager" });
-  const tabBar = el("div", { class: "data-tabs" });
+  if (folders.length === 0) {
+    toast("Chưa có thư mục data nào trên thiết bị.", "info");
+    return;
+  }
+
+  let activePath = null;
+  let openFolderIdx = folders.length === 1 ? 0 : -1; // auto-open if only 1 folder
+
+  const container = el("div", { class: "dm-container" });
+  const sidebar = el("div", { class: "dm-sidebar" });
+  const editor = el("div", { class: "dm-editor" });
   const contentArea = el("textarea", {
-    class: "data-textarea",
+    class: "dm-textarea",
     spellcheck: "false",
-    placeholder: "Đang tải...",
+    placeholder: "👈 Chọn thư mục → chọn file để xem/sửa",
   });
-  const statusBar = el("div", { class: "data-status" }, ["—"]);
+  const statusBar = el("div", { class: "dm-status" }, ["Chọn file bên trái"]);
 
-  // Script selector (if multiple scripts)
-  let currentScript = scriptIds[0];
-  let currentFileIdx = 0;
-  let currentFiles = registry[currentScript].files;
+  function renderSidebar() {
+    sidebar.innerHTML = "";
+    folders.forEach((folder, fi) => {
+      const isOpen = fi === openFolderIdx;
+      const card = el("div", { class: `dm-folder-card${isOpen ? " open" : ""}` });
 
-  function renderTabs() {
-    tabBar.innerHTML = "";
-    currentFiles = registry[currentScript].files;
-    currentFiles.forEach((f, i) => {
-      const tab = el("button", {
-        class: `data-tab${i === currentFileIdx ? " active" : ""}`,
-        onclick: () => { currentFileIdx = i; renderTabs(); loadFile(); },
-      }, [`📄 ${f.name}`]);
-      tabBar.appendChild(tab);
+      const header = el("button", {
+        class: "dm-folder-header",
+        onclick: () => {
+          openFolderIdx = isOpen ? -1 : fi;
+          renderSidebar();
+        },
+      }, [
+        el("span", { class: "dm-folder-icon" }, ["🎮"]),
+        el("span", { class: "dm-folder-label" }, [folder]),
+        el("span", { class: "dm-folder-arrow" }, ["▾"]),
+      ]);
+
+      const fileList = el("div", { class: "dm-file-list" });
+      EXPECTED_FILES.forEach((fname) => {
+        const path = `${folder}/${fname}`;
+        const fileBtn = el("button", {
+          class: `dm-file-btn${activePath === path ? " active" : ""}`,
+          onclick: (e) => {
+            e.stopPropagation();
+            activePath = path;
+            sidebar.querySelectorAll(".dm-file-btn").forEach(b => b.classList.remove("active"));
+            fileBtn.classList.add("active");
+            loadFile(folder, fname);
+          },
+        }, [`🗒️ ${fname}`]);
+        fileList.appendChild(fileBtn);
+      });
+
+      card.appendChild(header);
+      card.appendChild(fileList);
+      sidebar.appendChild(card);
     });
   }
 
-  async function loadFile() {
-    const file = currentFiles[currentFileIdx];
+  async function loadFile(folder, fname) {
+    const path = `${folder}/${fname}`;
     contentArea.value = "";
-    contentArea.placeholder = `Đang tải ${file.name}...`;
-    contentArea.readOnly = !file.editable;
-    statusBar.textContent = `${file.desc} ${file.editable ? "(có thể sửa)" : "(chỉ đọc)"}`;
+    contentArea.placeholder = `Đang tải ${path}...`;
+    contentArea.readOnly = false;
+    statusBar.textContent = `🗂️ ${folder} › 🗒️ ${fname}`;
 
     try {
-      const content = await api.readFile(device.udid, file.name);
-      contentArea.value = content;
-      contentArea.placeholder = file.editable
-        ? "Nhập nội dung..."
-        : "(File chỉ đọc)";
-      const lines = content.split("\n").length;
-      statusBar.textContent = `${file.desc} · ${lines} dòng · ${file.editable ? "✏️ Editable" : "🔒 Read-only"}`;
+      const content = await api.readFile(device.udid, path);
+      if (typeof content === "string" && content.startsWith("{") && content.includes('"error"')) {
+        contentArea.value = "";
+        contentArea.placeholder = "File chưa tồn tại — nhập nội dung rồi bấm Save để tạo";
+        statusBar.textContent = `${path} · chưa có dữ liệu`;
+      } else {
+        contentArea.value = content;
+        contentArea.placeholder = "Nhập nội dung...";
+        const lines = (content || "").split("\n").length;
+        statusBar.textContent = `🗂️ ${folder} › 🗒️ ${fname} · ${lines} dòng`;
+      }
     } catch (e) {
       contentArea.value = "";
-      contentArea.placeholder = `File chưa tồn tại hoặc lỗi: ${e}`;
-      statusBar.textContent = `${file.name}: không tải được`;
+      contentArea.placeholder = "File chưa tồn tại — nhập nội dung rồi bấm Save để tạo";
+      statusBar.textContent = `${path}: chưa tồn tại`;
     }
   }
 
   async function saveFile() {
-    const file = currentFiles[currentFileIdx];
-    if (!file.editable) {
-      toast("File này chỉ đọc.", "error");
-      return;
-    }
+    if (!activePath) return;
     try {
-      await api.writeFile(device.udid, file.name, contentArea.value);
-      toast(`💾 Đã lưu ${file.name}`, "success");
+      await api.writeFile(device.udid, activePath, contentArea.value);
+      toast(`🌟 Đã lưu ${activePath}`, "success");
     } catch (e) {
       toast(`Lỗi lưu: ${e}`, "error");
     }
   }
 
   async function clearFile() {
-    const file = currentFiles[currentFileIdx];
-    if (!confirm(`Xóa toàn bộ nội dung ${file.name}?`)) return;
+    if (!activePath) return;
+    if (!confirm(`Xóa toàn bộ nội dung ${activePath}?`)) return;
     contentArea.value = "";
     await saveFile();
   }
 
-  // Script selector dropdown (if multiple)
-  let scriptSelect = null;
-  if (scriptIds.length > 1) {
-    scriptSelect = el("select", {
-      class: "data-script-select",
-      onchange: (e) => {
-        currentScript = e.target.value;
-        currentFileIdx = 0;
-        renderTabs();
-        loadFile();
-      },
-    });
-    scriptIds.forEach(id => {
-      scriptSelect.appendChild(el("option", { value: id }, [registry[id].label]));
-    });
-  }
-
   // Assemble
-  if (scriptSelect) container.appendChild(scriptSelect);
-  container.appendChild(tabBar);
-  container.appendChild(contentArea);
-  container.appendChild(statusBar);
+  editor.appendChild(contentArea);
+  editor.appendChild(statusBar);
+  container.appendChild(sidebar);
+  container.appendChild(editor);
 
-  renderTabs();
+  renderSidebar();
 
   const modal = showModal({
-    title: `📂 Data · ${device.label || device.name}`,
+    title: `🗂️ Data · ${device.label || device.name}`,
     body: container,
-    width: "min(700px, 94vw)",
+    width: "min(820px, 96vw)",
     footer: [
-      el("button", { class: "btn btn-primary", onclick: saveFile }, ["💾 Save"]),
-      el("button", { class: "btn btn-secondary", onclick: loadFile }, ["📥 Pull"]),
-      el("button", { class: "btn btn-ghost", onclick: clearFile }, ["🗑 Clear"]),
+      el("button", { class: "btn btn-primary", onclick: saveFile }, ["🌟 Save"]),
+      el("button", { class: "btn btn-secondary", onclick: () => activePath && loadFile(...activePath.split("/")) }, ["🔄 Pull"]),
+      el("button", { class: "btn btn-ghost", onclick: clearFile }, ["🧹 Clear"]),
       el("span", { style: "flex:1" }),
       el("button", { class: "btn btn-ghost", onclick: () => modal.close() }, ["Đóng"]),
     ],
   });
 
-  // Load first file
-  loadFile();
+  // Ctrl+S / Cmd+S to save
+  function onKeyDown(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      e.preventDefault();
+      if (activePath) saveFile();
+    }
+  }
+  document.addEventListener("keydown", onKeyDown);
+  const origClose = modal.close;
+  modal.close = () => {
+    document.removeEventListener("keydown", onKeyDown);
+    origClose();
+  };
 }
