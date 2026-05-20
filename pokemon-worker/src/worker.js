@@ -35,6 +35,11 @@ export default {
         return handleLicenseInfo(request, env);
       }
 
+      // ─── Data Registry (file manifest per script) ───
+      if (path === "/api/scripts/data-registry" && request.method === "GET") {
+        return handleDataRegistry(env);
+      }
+
       // ─── Public read-only ───
       // Used by PokemonFleet's script picker dropdown — no auth required
       // because it only exposes script_id + name + version (no source code).
@@ -569,6 +574,36 @@ async function handleRevokeFleetLicense(id, env) {
 }
 
 // ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+// PUBLIC: DATA REGISTRY
+// ═══════════════════════════════════════════
+
+async function handleDataRegistry(env) {
+  const rows = await env.DB.prepare(
+    "SELECT script_id, name, data_files FROM scripts ORDER BY name"
+  ).all();
+
+  const registry = {};
+  for (const s of (rows.results || [])) {
+    let files;
+    try {
+      files = s.data_files ? JSON.parse(s.data_files) : null;
+    } catch(e) { files = null; }
+
+    if (!files || files.length === 0) {
+      files = [
+        { name: "account.txt", desc: "Tài khoản (TK|MK)", editable: true },
+        { name: "Success.txt", desc: "Kết quả thành công", editable: false },
+        { name: "Failed.txt", desc: "Kết quả lỗi", editable: false },
+      ];
+    }
+    registry[s.script_id] = { label: s.name || s.script_id, files };
+  }
+
+  return json(200, { ok: true, registry });
+}
+
 // HELPERS
 // ═══════════════════════════════════════════
 
