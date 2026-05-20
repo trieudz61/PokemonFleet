@@ -1259,3 +1259,142 @@ input:focus, select:focus, textarea:focus {
   gap: 8px;
   justify-content: center;
 }
+
+/* ─── Mail Server Modal ─── */
+.mail-server-form h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--text, #1F1F1F);
+}
+.mail-server-form h4:first-of-type { margin-top: 8px; }
+.mail-server-form .form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.mail-server-form .form-row label {
+  width: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted, #666);
+  flex-shrink: 0;
+}
+.mail-server-form .form-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid var(--border, #ddd);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--bg-input, #fff);
+  transition: border-color 0.2s;
+}
+.mail-server-form .form-row input:focus {
+  outline: none;
+  border-color: var(--accent, #FFD700);
+}
+.ms-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-elev-2, #f5f0e0);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ms-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ccc;
+  flex-shrink: 0;
+}
+.ms-dot-on {
+  background: #4CAF50;
+  box-shadow: 0 0 6px #4CAF50;
+  animation: ms-pulse 2s infinite;
+}
+@keyframes ms-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ─── Mail Server Guide ─── */
+.ms-guide {
+  margin-top: 16px;
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ms-guide summary {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--bg-elev-2, #f8f4e8);
+  user-select: none;
+}
+.ms-guide summary:hover {
+  background: var(--bg-elev-3, #f0ead8);
+}
+.ms-guide-content {
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ms-guide-content h5 {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 14px 0 6px;
+}
+.ms-guide-content h5:first-child { margin-top: 0; }
+.ms-guide-content ol {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+.ms-guide-content li {
+  margin-bottom: 4px;
+}
+.ms-note {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  margin: 6px 0;
+}
+.ms-code {
+  display: block;
+  background: #1e1e2e;
+  color: #a6e3a1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  margin: 6px 0;
+  word-break: break-all;
+}
+
+/* ─── Mail Server Hints ─── */
+.ms-hint {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  margin: 4px 0 12px;
+  padding-left: 4px;
+  line-height: 1.5;
+}
+.ms-link {
+  color: var(--accent, #e6a817);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+.ms-link:hover {
+  color: var(--accent-hover, #ffc107);
+}
+
+/* ─── Config Dialog Hints ─── */
+.cfg-hint {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+}

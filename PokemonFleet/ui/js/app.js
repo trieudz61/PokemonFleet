@@ -37,6 +37,7 @@ import { openBootstrapWizard } from "./components/BootstrapWizard.js";
 import { openLogModal } from "./components/LogModal.js";
 import { openScreenView } from "./components/ScreenView.js";
 import { openScreenGridView } from "./components/ScreenGridView.js";
+import { openMailServer } from "./components/MailServer.js";
 
 const LOG_BUFFER_PER_DEVICE = 500; // hard cap so memory stays bounded.
 
@@ -442,6 +443,9 @@ async function boot() {
   $("#bootstrap-help-btn").addEventListener("click", () => {
     showQuickGuide();
   });
+  $("#mail-server-btn").addEventListener("click", () => {
+    openMailServer();
+  });
 
   // Custom window controls (frameless window).
   const tauriWin = window.__TAURI__?.window?.getCurrentWindow?.();
@@ -458,6 +462,11 @@ async function boot() {
   await api.on("log",                  (e) => onLog(e.payload));
 
   await refreshDeviceList();
+
+  // Listen for setup-complete patch from BootstrapWizard
+  window.addEventListener("pkm-device-patched", (e) => {
+    onDeviceUpdated(e.detail);
+  });
   // Kick off Pokemon license lookups for any device that's already there.
   for (const d of state.devices) maybeFetchPokemonLicense(d);
   // Start the IDE-style 2s poller for running script status.

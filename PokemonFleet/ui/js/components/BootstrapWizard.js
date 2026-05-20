@@ -38,6 +38,23 @@ export async function openBootstrapWizard(device) {
     return;
   }
 
+  // Create data folders + files for Data Manager
+  try {
+    await api.writeFile(device.udid, "Chuysen/account.txt", "TK|MK\n");
+    await api.writeFile(device.udid, "Chuysen/Success.txt", "");
+    await api.writeFile(device.udid, "Chuysen/Failed.txt", "");
+    await api.writeFile(device.udid, "Register/account.txt", "TK|Ten|NgonNgu|Nam|Thang|Ngay|GioiTinh|ZipCode|Address1|Address2|SDT|Password\n");
+    await api.writeFile(device.udid, "Register/Success.txt", "");
+    await api.writeFile(device.udid, "Register/Failed.txt", "");
+  } catch (e) {
+    console.warn("[Setup] Could not create data files:", e);
+  }
+
+  // Mark device as having loader in local state + schedule UI refresh
+  device.has_loader = true;
+  // Dispatch custom event so app.js can re-render
+  window.dispatchEvent(new CustomEvent("pkm-device-patched", { detail: device }));
+
   // Replace body with success state showing UDID.
   modal.body.innerHTML = "";
   const udidBox = el("div", {

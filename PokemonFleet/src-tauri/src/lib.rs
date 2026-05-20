@@ -9,6 +9,7 @@ mod storage;
 mod license;
 mod bootstrap;
 mod utils;
+mod mail_server;
 
 use std::sync::Arc;
 use parking_lot::RwLock;
@@ -78,6 +79,15 @@ pub fn run() {
                 device::watcher::run(watcher_state).await;
             });
 
+            // Mail server state
+            let mail_state = Arc::new(mail_server::MailServerState::new());
+            // Try to load saved mail config
+            let mail_config_path = data_dir.join("mail_config.json");
+            if let Some(cfg) = mail_server::config::MailConfig::load(&mail_config_path) {
+                *mail_state.config.write() = Some(cfg);
+            }
+            app.manage(mail_state);
+
             app.manage(state);
             Ok(())
         })
@@ -115,7 +125,24 @@ pub fn run() {
             fleet::commands::get_ide_url,
             fleet::commands::get_pokemon_license,
             fleet::commands::open_external_url,
+
+            // Mail server
+            mail_server::commands::mail_server_status,
+            mail_server::commands::mail_server_save_config,
+            mail_server::commands::mail_server_load_config,
+            mail_server::commands::mail_server_start,
+            mail_server::commands::mail_server_stop,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                // Kill ngrok process on app exit
+                let mail_state: &Arc<mail_server::MailServerState> = app.state::<Arc<mail_server::MailServerState>>().inner();
+                if let Some(pid) = mail_state.ngrok_pid.write().take() {
+                    tracing::info!("App exiting — killing ngrok PID={}", pid);
+                    unsafe { libc::kill(pid as i32, libc::SIGTERM); }
+                }
+            }
+        });
 }

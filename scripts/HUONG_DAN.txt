@@ -1,0 +1,125 @@
+════════════════════════════════════════════════════════════
+🎮 POKEMON BOT — HƯỚNG DẪN SỬ DỤNG
+════════════════════════════════════════════════════════════
+
+Cảm ơn bạn đã mua! Vui lòng làm theo 4 bước đơn giản dưới đây.
+
+
+┌──────────────────────────────────────────────────────────┐
+│ BƯỚC 1: COPY FILE VÀO MÁY                                │
+└──────────────────────────────────────────────────────────┘
+
+Bạn nhận được 2 file từ admin:
+
+  • PokemonLoader.lue     ← script chính
+  • HUONG_DAN.txt         ← file này
+
+Copy 2 file vào thư mục Scripts của iControl trên máy iPhone.
+
+Cách copy:
+  → Mở app iControl → tab Editor → bấm "+" → Import file
+  → Hoặc: dùng app Filza copy vào:
+    /var/mobile/Library/IOSControl/Scripts/
+
+
+┌──────────────────────────────────────────────────────────┐
+│ BƯỚC 2: CHẠY LẦN ĐẦU — TẠO FILE CẤU HÌNH                 │
+└──────────────────────────────────────────────────────────┘
+
+Mở iControl → tab Editor → chọn PokemonLoader.lue → bấm RUN
+
+Lần đầu sẽ hiện:
+
+  📋 ĐÃ TẠO FILE CẤU HÌNH
+  
+  Vui lòng:
+  1. Mở file Pokemon_Config.txt
+  2. Điền LICENSE_KEY và MAIL_SERVER
+  3. Chạy lại script này
+
+Bấm OK.
+
+
+┌──────────────────────────────────────────────────────────┐
+│ BƯỚC 3: ĐIỀN CẤU HÌNH                                    │
+└──────────────────────────────────────────────────────────┘
+
+Trong iControl → tab Editor → mở file Pokemon_Config.txt
+
+Bạn sẽ thấy:
+
+  LICENSE_KEY=DAN-KEY-VAO-DAY
+  MAIL_SERVER=https://dia-chi-mail-server.com
+
+Sửa thành:
+
+  LICENSE_KEY=ABC-XYZ-123        ← key admin gửi
+  MAIL_SERVER=https://abc.com    ← URL mail server admin gửi
+
+Bấm SAVE (góc trên phải).
+
+⚠️ LƯU Ý:
+  • KHÔNG xoá dấu = ở giữa
+  • KHÔNG có khoảng trắng quanh dấu =
+  • KHÔNG cần dấu nháy "" hay ''
+
+
+┌──────────────────────────────────────────────────────────┐
+│ BƯỚC 4: TẠO FILE TÀI KHOẢN VÀ CHẠY                       │
+└──────────────────────────────────────────────────────────┘
+
+Run lại PokemonLoader.lue lần 2.
+
+Nếu chưa có file account.txt sẽ tự tạo. Mở account.txt
+paste tài khoản theo format:
+
+  email1@icloud.com|password1
+  email2@icloud.com|password2
+  email3@icloud.com|password3
+
+Mỗi dòng 1 acc. Save lại.
+
+Run lại PokemonLoader.lue → bot bắt đầu chạy!
+
+
+┌──────────────────────────────────────────────────────────┐
+│ KẾT QUẢ                                                  │
+└──────────────────────────────────────────────────────────┘
+
+Sau khi chạy xong sẽ có 2 file:
+
+  • Success.txt   — acc đăng ký thành công
+  • Failed.txt    — acc bị lỗi (kèm lý do)
+
+
+┌──────────────────────────────────────────────────────────┐
+│ CÁC LỖI THƯỜNG GẶP                                       │
+└──────────────────────────────────────────────────────────┘
+
+  ❌ KEY KHÔNG ĐÚNG MÁY
+     → Bạn dùng key của máy khác. Liên hệ admin gắn lại.
+
+  ❌ KEY ĐÃ HẾT HẠN
+     → Gia hạn để tiếp tục dùng.
+
+  ❌ KHÔNG KẾT NỐI ĐƯỢC SERVER
+     → Kiểm tra Wifi/4G. Thử lại sau.
+
+  ❌ KHÔNG NHẬN ĐƯỢC OTP
+     → Mail server không hoạt động. Báo admin.
+
+
+┌──────────────────────────────────────────────────────────┐
+│ HỖ TRỢ                                                   │
+└──────────────────────────────────────────────────────────┘
+
+Telegram: @your_admin_handle
+Zalo:     0xxxxxxxxx
+Email:    support@yoursite.com
+
+Khi liên hệ vui lòng cung cấp:
+  • Mã KEY của bạn
+  • Screenshot lỗi (nếu có)
+  • UDID máy (xem trong app iControl tab Settings)
+
+════════════════════════════════════════════════════════════

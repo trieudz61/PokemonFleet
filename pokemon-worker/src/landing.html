@@ -2,40 +2,55 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2745%27 fill=%27%23fff%27 stroke=%27%231F1F1F%27 stroke-width=%276%27/><path d=%27M5 50h90%27 stroke=%27%231F1F1F%27 stroke-width=%276%27/><path d=%27M5 50A45 45 0 0 1 95 50%27 fill=%27%23EE1515%27 stroke=%27%231F1F1F%27 stroke-width=%276%27/><circle cx=%2750%27 cy=%2750%27 r=%2712%27 fill=%27%23fff%27 stroke=%27%231F1F1F%27 stroke-width=%276%27/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><circle cx=%2750%27 cy=%2750%27 r=%2745%27 fill=%27%23fff%27 stroke=%27%23222%27 stroke-width=%276%27/><path d=%27M5 50h90%27 stroke=%27%23222%27 stroke-width=%276%27/><path d=%27M5 50A45 45 0 0 1 95 50%27 fill=%27%23DC0A2D%27 stroke=%27%23222%27 stroke-width=%276%27/><circle cx=%2750%27 cy=%2750%27 r=%2712%27 fill=%27%23fff%27 stroke=%27%23222%27 stroke-width=%276%27/></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>POKEIOSControl · Tự động hóa iPhone Farm</title>
 <meta name="description" content="Công cụ tự động hóa iPhone farm hàng đầu. Chạy script Pokemon trên nhiều thiết bị cùng lúc, quản lý tập trung qua USB.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Baloo+2:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap&subset=vietnamese,latin,latin-ext" rel="stylesheet">
 <style>
 :root {
-  --bg: #FFF8E7;
-  --bg2: #FFF3D0;
+  /* Official Pokemon palette */
+  --poke-red: #DC0A2D;
+  --poke-red-dark: #A8001E;
+  --poke-yellow: #FFCB05;
+  --poke-yellow-dark: #F2A900;
+  --poke-blue: #3D7DCA;
+  --poke-blue-dark: #003A70;
+  --poke-gold: #B8860B;
+  --poke-cream: #FFFEF5;
+  --poke-sky: #94D0F0;
+  --poke-grass: #7AC74C;
+  --poke-grass-dark: #4E8234;
+
+  /* Type colors */
+  --type-fire: #EE8130;
+  --type-water: #6390F0;
+  --type-grass: #7AC74C;
+  --type-electric: #F7D02C;
+  --type-psychic: #F95587;
+  --type-fighting: #C22E28;
+
+  --bg: #FFFEF5;
   --surface: #FFFFFF;
-  --border: #1F1F1F;
-  --border-light: rgba(0,0,0,0.08);
-  --text: #1F1F1F;
+  --border: #222222;
+  --text: #1A1A1A;
   --text2: #5A5A5A;
   --text3: #8A8A8A;
-  --pokemon-yellow: #FFCC00;
-  --pokemon-gold: #B8860B;
-  --pokeball-red: #EE1515;
-  --pokemon-blue: #3B4CCA;
-  --grass: #7AC74C;
-  --water: #6390F0;
-  --fire: #EE8130;
-  --electric: #F7D02C;
-  --radius: 16px;
-  --radius-lg: 24px;
-  --radius-pill: 50px;
-  --shadow-chunky: 4px 4px 0px var(--border);
-  --shadow-hover: 6px 6px 0px var(--border);
-  --font-display: 'Nunito', sans-serif;
+
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --shadow-card: 0 6px 0 var(--border), 0 8px 20px rgba(0,0,0,0.15);
+  --shadow-card-hover: 0 8px 0 var(--border), 0 12px 28px rgba(0,0,0,0.2);
+
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-display: 'Baloo 2', 'Fredoka', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -43,586 +58,970 @@ body {
   overflow-x: hidden;
   position: relative;
 }
-/* Floating Pokeball decorations */
+
+/* ─── Pokeball pattern background ─── */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.04;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23fff' stroke='%231F1F1F' stroke-width='6'/%3E%3Cpath d='M5 50h90' stroke='%231F1F1F' stroke-width='6'/%3E%3Cpath d='M5 50A45 45 0 0 1 95 50' fill='%23EE1515' stroke='%231F1F1F' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23fff' stroke='%231F1F1F' stroke-width='6'/%3E%3C/svg%3E");
-  background-size: 80px 80px;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='50' fill='none' stroke='%23222' stroke-width='4'/%3E%3Cpath d='M10 60h100' stroke='%23222' stroke-width='4'/%3E%3Ccircle cx='60' cy='60' r='14' fill='none' stroke='%23222' stroke-width='4'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
 }
-.header, .hero, .section, .footer { position: relative; z-index: 1; }
 
-/* Scattered floating Pokemon */
-.deco-ball {
+/* ─── Floating Pokemon sprites ─── */
+.deco {
   position: fixed;
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.12;
-  animation: floatBall 20s ease-in-out infinite;
+  z-index: 1;
+  filter: drop-shadow(4px 6px 0 rgba(0,0,0,0.15));
+  animation: float 6s ease-in-out infinite;
 }
-.deco-ball:nth-child(1) { top: 8%; left: 4%; width: 100px; animation-delay: 0s; }
-.deco-ball:nth-child(2) { top: 20%; right: 5%; width: 90px; animation-delay: -4s; }
-.deco-ball:nth-child(3) { top: 50%; left: 2%; width: 70px; animation-delay: -8s; }
-.deco-ball:nth-child(4) { top: 65%; right: 3%; width: 80px; animation-delay: -12s; }
-.deco-ball:nth-child(5) { top: 85%; left: 10%; width: 65px; animation-delay: -16s; }
-.deco-ball:nth-child(6) { top: 38%; left: 90%; width: 75px; animation-delay: -6s; }
-@keyframes floatBall {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-12px) rotate(5deg); }
-  50% { transform: translateY(0) rotate(0deg); }
-  75% { transform: translateY(8px) rotate(-3deg); }
+.deco-1 { top: 12%; left: 3%; width: 130px; animation-delay: 0s; }
+.deco-2 { top: 65%; right: 4%; width: 110px; animation-delay: -2s; }
+.deco-3 { bottom: 8%; left: 5%; width: 95px; animation-delay: -4s; }
+.deco-4 { top: 38%; right: 8%; width: 85px; animation-delay: -3s; opacity: 0.85; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-18px) rotate(3deg); }
 }
 
 /* ─── Header ─── */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--poke-red);
+  color: white;
+  border-bottom: 4px solid var(--border);
+  box-shadow: 0 4px 0 var(--border), 0 8px 20px rgba(220,10,45,0.25);
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
-  position: sticky;
-  top: 0;
-  background: rgba(255,248,231,0.95);
-  backdrop-filter: blur(10px);
-  z-index: 100;
-  border-bottom: 3px solid var(--border);
 }
 .logo {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
-  color: var(--text);
+  color: white;
 }
-.logo-ball {
-  width: 42px; height: 42px;
-  background: linear-gradient(180deg, #EE1515 50%, #fff 50%);
+.pokeball {
+  width: 44px; height: 44px;
+  background: linear-gradient(180deg, white 50%, white 50%);
   border-radius: 50%;
   border: 3px solid var(--border);
   position: relative;
-  box-shadow: var(--shadow-chunky);
+  flex-shrink: 0;
+  box-shadow: inset -4px -4px 0 rgba(0,0,0,0.15), 0 3px 0 var(--border);
+  overflow: hidden;
+  animation: spin 8s linear infinite;
 }
-.logo-ball::after {
+.pokeball::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: var(--poke-red);
+  border-bottom: 3px solid var(--border);
+}
+.pokeball::after {
   content: '';
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 14px; height: 14px;
-  background: #fff;
+  background: white;
   border: 3px solid var(--border);
   border-radius: 50%;
+  z-index: 2;
+}
+@keyframes spin {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
 }
 .logo-text {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 2px 2px 0 var(--border);
 }
+.logo-text .accent { color: var(--poke-yellow); }
 .nav-links {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
 }
 .nav-links a {
-  padding: 10px 18px;
+  padding: 10px 16px;
   border-radius: var(--radius);
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--text2);
+  font-size: 0.88rem;
+  color: white;
   transition: all 0.15s;
-  border: 2px solid transparent;
 }
-.nav-links a:hover { background: var(--bg2); color: var(--text); }
-.nav-links .btn-cta {
-  background: var(--pokemon-yellow);
-  color: var(--text);
-  border-color: var(--border);
-  box-shadow: var(--shadow-chunky);
+.nav-links a:hover { background: rgba(255,255,255,0.18); }
+.nav-cta {
+  background: var(--poke-yellow) !important;
+  color: var(--border) !important;
+  border: 3px solid var(--border);
+  box-shadow: 0 3px 0 var(--border);
+  font-weight: 700 !important;
+  margin-left: 6px;
 }
-.nav-links .btn-cta:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow-hover); }
+.nav-cta:hover {
+  background: var(--poke-yellow-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--border);
+}
 
 /* ─── Hero ─── */
 .hero {
-  text-align: center;
-  padding: 80px 40px 60px;
   position: relative;
+  padding: 70px 24px 50px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, var(--poke-sky) 0%, var(--poke-sky) 60%, transparent 100%),
+    var(--bg);
+  overflow: hidden;
+  border-bottom: 4px solid var(--border);
 }
 .hero::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(255,204,0,0.2) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(238,21,21,0.1) 0%, transparent 40%);
+  bottom: -1px;
+  left: 0; right: 0;
+  height: 60px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'%3E%3Cpath d='M0,30 Q150,0 300,30 T600,30 T900,30 T1200,30 L1200,60 L0,60 Z' fill='%23FFFEF5'/%3E%3C/svg%3E") no-repeat center bottom;
+  background-size: cover;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 5%; left: 50%;
+  transform: translateX(-50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(255,203,5,0.4) 0%, transparent 60%);
   pointer-events: none;
+  animation: pulse 4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+  50% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
-  background: var(--surface);
-  border: 2px solid var(--border);
+  background: white;
+  border: 3px solid var(--border);
   border-radius: var(--radius-pill);
-  font-size: 0.78rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
   font-weight: 600;
-  margin-bottom: 24px;
-  box-shadow: var(--shadow-chunky);
-  position: relative;
+  margin-bottom: 28px;
+  box-shadow: 0 4px 0 var(--border);
+  color: var(--poke-red);
+}
+.hero-badge .dot {
+  width: 8px; height: 8px;
+  background: var(--poke-red);
+  border-radius: 50%;
+  animation: blink 1.5s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 .hero h1 {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 20px;
-  position: relative;
+  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--poke-yellow);
+  -webkit-text-stroke: 3px var(--poke-blue-dark);
+  text-shadow:
+    4px 4px 0 var(--poke-blue-dark),
+    8px 8px 0 var(--border);
+  margin-bottom: 24px;
 }
-.hero h1 span { color: var(--pokeball-red); }
+.hero h1 .red {
+  color: white;
+  -webkit-text-stroke: 3px var(--poke-red);
+  text-shadow:
+    4px 4px 0 var(--poke-red),
+    8px 8px 0 var(--border);
+  display: inline-block;
+  transform: rotate(-2deg);
+}
 .hero p {
-  font-size: 1.1rem;
-  color: var(--text2);
-  max-width: 600px;
+  font-size: 1.15rem;
+  color: var(--text);
+  max-width: 620px;
   margin: 0 auto 36px;
   line-height: 1.6;
-  position: relative;
+  font-weight: 500;
 }
+.hero p strong { color: var(--poke-red); font-weight: 700; }
 .hero-buttons {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
-  position: relative;
+  margin-bottom: 50px;
 }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
+  gap: 10px;
+  padding: 16px 32px;
   border-radius: var(--radius);
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
   border: 3px solid var(--border);
   text-decoration: none;
   transition: all 0.15s;
-  font-family: var(--font-body);
 }
-.btn:active { transform: translate(2px, 2px); box-shadow: none !important; }
+.btn:hover { transform: translateY(-3px); }
+.btn:active { transform: translateY(0); box-shadow: 0 0 0 var(--border) !important; }
 .btn-primary {
-  background: linear-gradient(135deg, #EE1515 0%, #CC0000 100%);
+  background: var(--poke-red);
   color: white;
-  box-shadow: var(--shadow-chunky);
+  box-shadow: 0 6px 0 var(--poke-red-dark), 0 9px 16px rgba(220,10,45,0.3);
 }
-.btn-primary:hover { box-shadow: var(--shadow-hover); transform: translate(-1px,-1px); }
+.btn-primary:hover { box-shadow: 0 8px 0 var(--poke-red-dark), 0 12px 22px rgba(220,10,45,0.4); }
 .btn-secondary {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-chunky);
+  background: var(--poke-yellow);
+  color: var(--border);
+  box-shadow: 0 6px 0 var(--poke-yellow-dark), 0 9px 16px rgba(255,203,5,0.3);
 }
-.btn-secondary:hover { background: var(--bg2); }
+.btn-secondary:hover { box-shadow: 0 8px 0 var(--poke-yellow-dark), 0 12px 22px rgba(255,203,5,0.4); }
 
-/* ─── Screenshot placeholder ─── */
-.hero-screenshot {
-  max-width: 900px;
-  margin: 50px auto 0;
-  background: var(--surface);
-  border: 3px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 8px 8px 0px var(--border);
-  overflow: hidden;
+/* Hero stats */
+.hero-stats {
   display: flex;
-  align-items: center;
   justify-content: center;
-  color: var(--text3);
-  font-size: 1.2rem;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.stat {
+  background: white;
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 22px;
+  box-shadow: 0 4px 0 var(--border);
+  text-align: center;
+  min-width: 110px;
+}
+.stat-num {
   font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--poke-red);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text2);
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Hero screenshot */
+.hero-screenshot {
+  max-width: 920px;
+  margin: 30px auto 0;
+  background: white;
+  border: 4px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 0 var(--border), 0 20px 50px rgba(0,0,0,0.25);
+  overflow: hidden;
   position: relative;
+}
+.hero-screenshot::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 28px;
+  background: linear-gradient(180deg, #f3f3f3, #e0e0e0);
+  border-bottom: 2px solid var(--border);
+  z-index: 2;
+}
+.hero-screenshot::after {
+  content: '● ● ●';
+  position: absolute;
+  top: 4px; left: 12px;
+  color: var(--poke-red);
+  font-size: 12px;
+  letter-spacing: 4px;
+  z-index: 3;
 }
 .hero-screenshot img {
   width: 100%;
   height: auto;
   display: block;
+  margin-top: 28px;
 }
 
-/* ─── Features ─── */
+/* ─── Sections ─── */
 .section {
-  padding: 80px 40px;
+  padding: 90px 24px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+.section-eyebrow {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--poke-red);
+  letter-spacing: 0.15em;
+  margin-bottom: 14px;
+  padding: 6px 14px;
+  background: rgba(220,10,45,0.08);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--poke-red);
+}
+.section-head {
+  text-align: center;
+  margin-bottom: 56px;
 }
 .section-title {
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
   font-weight: 700;
-  text-align: center;
-  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+  line-height: 1.1;
+}
+.section-title .hl {
+  color: var(--poke-red);
+  position: relative;
+  display: inline-block;
+}
+.section-title .hl::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0; right: 0;
+  height: 8px;
+  background: var(--poke-yellow);
+  z-index: -1;
+  border-radius: 4px;
 }
 .section-subtitle {
-  text-align: center;
   color: var(--text2);
-  font-size: 1rem;
-  margin-bottom: 48px;
+  font-size: 1.05rem;
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
+  line-height: 1.5;
 }
+
+/* ─── Features (Type cards) ─── */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
 }
 .feature-card {
-  background: var(--surface);
+  background: white;
   border: 3px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
-  box-shadow: var(--shadow-chunky);
-  transition: all 0.15s;
+  box-shadow: 0 6px 0 var(--border);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 .feature-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-5px) rotate(-1deg);
+  box-shadow: 0 10px 0 var(--border);
 }
-.feature-icon {
-  width: 52px; height: 52px;
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem;
-  margin-bottom: 16px;
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100px;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='none' stroke='currentColor' stroke-width='4'/%3E%3Cpath d='M5 50h90' stroke='currentColor' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='12' fill='none' stroke='currentColor' stroke-width='4'/%3E%3C/svg%3E");
+  background-position: top right -30px;
+  background-repeat: no-repeat;
+  background-size: 140px;
+  pointer-events: none;
+}
+.feature-card.t-electric { color: var(--type-electric); }
+.feature-card.t-fire { color: var(--type-fire); }
+.feature-card.t-grass { color: var(--type-grass); }
+.feature-card.t-water { color: var(--type-water); }
+.feature-card.t-psychic { color: var(--type-psychic); }
+.feature-card.t-fighting { color: var(--type-fighting); }
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   border: 2px solid var(--border);
+  margin-bottom: 14px;
+  color: white;
+  box-shadow: 0 2px 0 var(--border);
 }
-.feature-card:nth-child(1) .feature-icon { background: rgba(255,204,0,0.2); }
-.feature-card:nth-child(2) .feature-icon { background: rgba(238,21,21,0.12); }
-.feature-card:nth-child(3) .feature-icon { background: rgba(122,199,76,0.2); }
-.feature-card:nth-child(4) .feature-icon { background: rgba(99,144,240,0.2); }
-.feature-card:nth-child(5) .feature-icon { background: rgba(163,62,161,0.15); }
-.feature-card:nth-child(6) .feature-icon { background: rgba(238,129,48,0.15); }
+.t-electric .type-badge { background: var(--type-electric); color: var(--border); }
+.t-fire .type-badge { background: var(--type-fire); }
+.t-grass .type-badge { background: var(--type-grass); }
+.t-water .type-badge { background: var(--type-water); }
+.t-psychic .type-badge { background: var(--type-psychic); }
+.t-fighting .type-badge { background: var(--type-fighting); }
+
+.feature-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  display: inline-block;
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.1));
+}
 .feature-card h3 {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   margin-bottom: 8px;
+  color: var(--text);
 }
-.feature-card p { color: var(--text2); font-size: 0.88rem; line-height: 1.5; }
+.feature-card p {
+  color: var(--text2);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
 
-/* ─── How it works ─── */
+/* ─── Steps (Pokemon Journey) ─── */
+.journey-section {
+  background: linear-gradient(180deg, var(--bg) 0%, rgba(255,203,5,0.1) 100%);
+  border-top: 4px solid var(--border);
+  border-bottom: 4px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
 .steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  counter-reset: step;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 22px;
+  position: relative;
 }
 .step {
-  background: var(--surface);
+  background: white;
   border: 3px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px;
-  box-shadow: var(--shadow-chunky);
+  padding: 26px 22px 22px;
+  box-shadow: 0 6px 0 var(--border);
   position: relative;
-  counter-increment: step;
+  transition: all 0.2s;
 }
-.step::before {
-  content: counter(step);
+.step:hover { transform: translateY(-4px); box-shadow: 0 10px 0 var(--border); }
+.step-num {
   position: absolute;
-  top: -14px; left: 20px;
-  width: 32px; height: 32px;
-  background: var(--pokemon-yellow);
+  top: -22px; left: 22px;
+  width: 48px; height: 48px;
+  background: var(--poke-red);
+  color: white;
   border: 3px solid var(--border);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 0 var(--border);
 }
+.step:nth-child(1) .step-num { background: var(--type-fire); }
+.step:nth-child(2) .step-num { background: var(--type-water); }
+.step:nth-child(3) .step-num { background: var(--type-grass); }
+.step:nth-child(4) .step-num { background: var(--type-electric); color: var(--border); }
 .step h4 {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 18px;
   margin-bottom: 8px;
-  margin-top: 8px;
 }
-.step p { color: var(--text2); font-size: 0.85rem; line-height: 1.5; }
+.step p {
+  color: var(--text2);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
 .step-video {
   position: absolute;
-  top: -10px;
-  right: 12px;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, #FF6B6B, #EE1515);
-  color: #fff;
-  font-size: 0.68rem;
+  top: -16px; right: 14px;
+  padding: 5px 12px;
+  background: var(--border);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
   font-weight: 700;
   border-radius: var(--radius-pill);
   border: 2px solid var(--border);
   text-decoration: none;
-  box-shadow: 2px 2px 0 var(--border);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
   transition: all 0.15s;
-  z-index: 2;
+  z-index: 3;
 }
-.step-video:hover {
-  transform: translate(-1px, -1px) scale(1.05);
-  box-shadow: 3px 3px 0 var(--border);
-}
+.step-video:hover { transform: translateY(-2px); background: var(--poke-red); }
 
-/* ─── Pricing ─── */
+/* ─── Pricing (Trainer Cards) ─── */
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  max-width: 900px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 24px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 .price-card {
-  background: var(--surface);
-  border: 3px solid var(--border);
+  background: white;
+  border: 4px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 32px;
+  padding: 0;
   text-align: center;
-  box-shadow: var(--shadow-chunky);
+  box-shadow: 0 8px 0 var(--border);
   position: relative;
-  transition: all 0.15s;
+  transition: all 0.25s;
+  overflow: hidden;
 }
-.price-card:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-hover); }
-.price-card.popular {
-  border-color: var(--pokeball-red);
-  box-shadow: 6px 6px 0px var(--pokeball-red);
-}
-.price-card.popular::before {
-  content: '⭐ Phổ biến';
-  position: absolute;
-  top: -14px; left: 50%;
-  transform: translateX(-50%);
-  background: var(--pokeball-red);
+.price-card:hover { transform: translateY(-6px) rotate(-0.5deg); box-shadow: 0 14px 0 var(--border); }
+
+.price-header {
+  padding: 28px 24px 20px;
+  position: relative;
+  border-bottom: 3px solid var(--border);
+  background: linear-gradient(180deg, var(--poke-blue) 0%, var(--poke-blue-dark) 100%);
   color: white;
-  padding: 4px 16px;
-  border-radius: var(--radius-pill);
-  font-size: 0.72rem;
-  font-weight: 700;
-  border: 2px solid var(--border);
+  overflow: hidden;
 }
+.price-header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23fff' stroke='%23222' stroke-width='4' opacity='0.15'/%3E%3Cpath d='M5 50h90' stroke='%23fff' stroke-width='4' opacity='0.2'/%3E%3Ccircle cx='50' cy='50' r='12' fill='%23fff' stroke='%23222' stroke-width='4' opacity='0.2'/%3E%3C/svg%3E");
+  background-size: contain;
+}
+.price-card.starter .price-header { background: linear-gradient(180deg, var(--type-grass) 0%, var(--poke-grass-dark) 100%); }
+.price-card.popular .price-header { background: linear-gradient(180deg, var(--poke-red) 0%, var(--poke-red-dark) 100%); }
+.price-card.enterprise .price-header { background: linear-gradient(180deg, var(--poke-blue) 0%, var(--poke-blue-dark) 100%); }
+
 .price-name {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-shadow: 2px 2px 0 var(--border);
+  position: relative;
+  z-index: 2;
+}
+.price-tag {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.2);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,0.4);
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
 }
 .price-amount {
   font-family: var(--font-display);
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin-bottom: 4px;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 3px 3px 0 var(--border);
+  position: relative;
+  z-index: 2;
 }
-.price-amount span { font-size: 1rem; font-weight: 500; color: var(--text2); }
-.price-period { color: var(--text3); font-size: 0.82rem; margin-bottom: 20px; }
+.price-amount span {
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.85;
+  text-shadow: none;
+}
+.price-period {
+  font-size: 0.85rem;
+  opacity: 0.95;
+  margin-top: 8px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+
+.price-body {
+  padding: 24px;
+}
 .price-features {
   list-style: none;
   text-align: left;
   margin-bottom: 24px;
 }
 .price-features li {
-  padding: 8px 0;
-  font-size: 0.85rem;
-  color: var(--text2);
-  border-bottom: 1px dashed var(--border-light);
+  padding: 10px 0;
+  font-size: 0.92rem;
+  color: var(--text);
+  border-bottom: 1px dashed rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
-.price-features li::before { content: '✓'; color: var(--grass); font-weight: 700; }
+.price-features li::before {
+  content: '';
+  width: 18px; height: 18px;
+  background: var(--poke-red);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  background-image: linear-gradient(180deg, var(--poke-red) 50%, white 50%);
+}
+.price-card.starter .price-features li::before { background-image: linear-gradient(180deg, var(--type-grass) 50%, white 50%); }
+.price-card.enterprise .price-features li::before { background-image: linear-gradient(180deg, var(--poke-blue) 50%, white 50%); }
+
+.popular-badge {
+  position: absolute;
+  top: 14px; right: -38px;
+  background: var(--poke-yellow);
+  color: var(--border);
+  padding: 6px 44px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid var(--border);
+  transform: rotate(45deg);
+  box-shadow: 0 3px 0 var(--border);
+  z-index: 4;
+  letter-spacing: 0.05em;
+}
 
 /* ─── Footer ─── */
 .footer {
   text-align: center;
-  padding: 40px;
-  border-top: 3px solid var(--border);
-  background: var(--surface);
-  margin-top: 60px;
+  padding: 40px 24px;
+  background: var(--poke-red);
+  color: white;
+  border-top: 4px solid var(--border);
+  position: relative;
+  z-index: 2;
 }
-.footer p { color: var(--text3); font-size: 0.82rem; }
-.footer a { color: var(--pokeball-red); text-decoration: none; font-weight: 600; }
+.footer-pokeballs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.footer-pokeballs .mini-ball {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, white 50%, var(--poke-yellow) 50%);
+  border: 2px solid var(--border);
+  position: relative;
+}
+.footer-pokeballs .mini-ball::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px; height: 8px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+.footer p { font-size: 0.9rem; font-weight: 500; }
+.footer p + p { margin-top: 6px; opacity: 0.85; font-size: 0.78rem; }
+.footer a { color: var(--poke-yellow); text-decoration: none; font-weight: 700; }
+.footer a:hover { text-decoration: underline; }
 
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .header { padding: 12px 16px; }
-  .logo-ball { width: 32px; height: 32px; }
-  .logo-text { font-size: 1.1rem; }
-  .hero { padding: 36px 16px 30px; }
-  .hero h1 { font-size: 1.8rem; }
-  .hero p { font-size: 0.9rem; margin-bottom: 24px; }
-  .hero-badge { font-size: 0.7rem; padding: 6px 12px; margin-bottom: 16px; }
-  .hero-buttons { gap: 10px; }
-  .btn { padding: 10px 18px; font-size: 0.8rem; }
-  .hero-screenshot { max-width: 100%; margin-top: 30px; border-radius: 12px; }
-  .section { padding: 40px 16px; }
-  .section-title { font-size: 1.5rem; }
-  .section-subtitle { font-size: 0.85rem; margin-bottom: 28px; }
-  .features-grid { grid-template-columns: 1fr; gap: 14px; }
-  .feature-card { padding: 20px; }
-  .feature-card h3 { font-size: 1rem; }
-  .feature-card p { font-size: 0.82rem; }
-  .steps { grid-template-columns: 1fr; gap: 14px; }
-  .step { padding: 20px; }
-  .pricing-grid { grid-template-columns: 1fr; gap: 14px; }
-  .price-card { padding: 24px; }
-  .price-amount { font-size: 1.8rem; }
-  .nav-links a:not(.btn-cta) { display: none; }
-  .nav-links .btn-cta { padding: 8px 14px; font-size: 0.78rem; }
-  .deco-ball { display: none; }
-  body::before { display: none; }
-  .footer { padding: 28px 16px; }
+  .header-inner { padding: 10px 16px; }
+  .pokeball { width: 36px; height: 36px; }
+  .logo-text { font-size: 1.15rem; text-shadow: 1px 1px 0 var(--border); }
+  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-cta { padding: 8px 14px !important; font-size: 0.78rem !important; }
+
+  .hero { padding: 40px 16px 30px; }
+  .hero h1 { font-size: 2.4rem; -webkit-text-stroke: 2px var(--poke-blue-dark); text-shadow: 3px 3px 0 var(--poke-blue-dark), 6px 6px 0 var(--border); }
+  .hero h1 .red { -webkit-text-stroke: 2px var(--poke-red); text-shadow: 3px 3px 0 var(--poke-red), 6px 6px 0 var(--border); }
+  .hero p { font-size: 0.95rem; margin-bottom: 26px; }
+  .hero-badge { font-size: 0.72rem; padding: 6px 14px; margin-bottom: 18px; }
+  .btn { padding: 12px 22px; font-size: 0.88rem; }
+  .hero-stats { gap: 12px; }
+  .stat { padding: 10px 16px; min-width: auto; }
+  .stat-num { font-size: 1.3rem; }
+
+  .section { padding: 60px 16px; }
+  .section-title { font-size: 1.7rem; }
+  .section-subtitle { font-size: 0.92rem; }
+
+  .features-grid, .steps, .pricing-grid { grid-template-columns: 1fr; gap: 18px; }
+  .feature-card, .step { padding: 22px; }
+  .price-card { margin-top: 10px; }
+  .price-amount { font-size: 2.4rem; }
+
+  .deco { display: none; }
+  .footer { padding: 30px 16px; }
 }
 </style>
 </head>
 <body>
 
 <!-- Floating Pokemon decorations -->
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="">
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="">
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="">
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="">
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png" alt="">
-<img class="deco-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png" alt="">
+<img class="deco deco-1" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu">
+<img class="deco deco-2" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard">
+<img class="deco deco-3" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" alt="Bulbasaur">
+<img class="deco deco-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png" alt="Squirtle">
 
 <header class="header">
-  <a href="/" class="logo">
-    <div class="logo-ball"></div>
-    <span class="logo-text">POKE<span style="color:var(--pokeball-red)">IOS</span>Control</span>
-  </a>
-  <nav class="nav-links">
-    <a href="#features">Tính năng</a>
-    <a href="#how">Cách dùng</a>
-    <a href="#pricing">Bảng giá</a>
-  </nav>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <div class="pokeball"></div>
+      <span class="logo-text">POKE<span class="accent">IOS</span>Control</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Tính năng</a>
+      <a href="#how">Cách dùng</a>
+      <a href="#pricing">Bảng giá</a>
+      <a href="#pricing" class="nav-cta">⚡ Mua ngay</a>
+    </nav>
+  </div>
 </header>
 
 <section class="hero">
-  <div class="hero-badge">⚡ Phiên bản mới nhất · v1.0</div>
-  <h1>Tự động hóa<br><span>iPhone Farm</span><br>dễ như bắt Pokemon</h1>
-  <p>Chạy script trên hàng chục iPhone cùng lúc qua USB. Yêu cầu máy đã Jailbreak iOS 15–16, hỗ trợ iPhone 6/6+, 7/7+, 8/8+, X. Quản lý tập trung, không cần WiFi.</p>
-  <div class="hero-buttons">
-    <a href="#pricing" class="btn btn-primary">🎮 Mua License</a>
-    <a href="#how" class="btn btn-secondary">📖 Hướng dẫn</a>
-  </div>
-  <div class="hero-screenshot">
-    <img src="https://raw.githubusercontent.com/trieudz61/PokemonFleet/main/pokemon-worker/src/screenshot.png" alt="POKEIOSControl - Giao diện quản lý iPhone Farm">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      Phiên bản mới · v1.0 đã sẵn sàng
+    </div>
+    <h1>
+      Bắt trọn<br>
+      <span class="red">iPhone Farm</span><br>
+      như Pokemon
+    </h1>
+    <p>
+      Chạy script trên hàng chục iPhone <strong>cùng lúc qua USB</strong>.
+      Hỗ trợ iPhone 6/6+/7/7+/8/8+/X jailbreak iOS 15–16.
+      Không WiFi, không lag, quản lý tập trung.
+    </p>
+    <div class="hero-buttons">
+      <a href="#pricing" class="btn btn-primary">⚡ Mua License</a>
+      <a href="#how" class="btn btn-secondary">📖 Xem cách dùng</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">16+</div>
+        <div class="stat-label">Thiết bị</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2s</div>
+        <div class="stat-label">Fast Run</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Hỗ trợ</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">USB ổn định</div>
+      </div>
+    </div>
+    <div class="hero-screenshot">
+      <img src="https://raw.githubusercontent.com/trieudz61/PokemonFleet/main/pokemon-worker/src/screenshot.png" alt="POKEIOSControl - Giao diện quản lý iPhone Farm">
+    </div>
   </div>
 </section>
 
 <section class="section" id="features">
-  <div class="section-title">Tính năng nổi bật</div>
-  <div class="section-subtitle">Mọi thứ bạn cần để vận hành farm iPhone hiệu quả</div>
+  <div class="section-head">
+    <div class="section-eyebrow">★ FEATURES</div>
+    <div class="section-title">Tính năng <span class="hl">siêu mạnh</span></div>
+    <div class="section-subtitle">Mọi thứ bạn cần để vận hành farm iPhone hiệu quả, mỗi tính năng như một hệ Pokemon riêng</div>
+  </div>
   <div class="features-grid">
-    <div class="feature-card">
+    <div class="feature-card t-electric">
+      <span class="type-badge">⚡ Electric</span>
       <div class="feature-icon">⚡</div>
       <h3>Fast Run</h3>
       <p>Chạy script trực tiếp không qua menu. Chọn script → bấm Run → tất cả máy chạy song song trong 2 giây.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔴</div>
+    <div class="feature-card t-fire">
+      <span class="type-badge">🔥 Fire</span>
+      <div class="feature-icon">🔌</div>
       <h3>Kết nối USB ổn định</h3>
-      <p>Cắm cáp là nhận. Không cần WiFi, không lag, không mất kết nối. Hỗ trợ 16+ thiết bị cùng lúc qua hub USB.</p>
+      <p>Cắm cáp là nhận. Không cần WiFi, không lag, không mất kết nối. Hỗ trợ 16+ thiết bị qua hub USB.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🌿</div>
+    <div class="feature-card t-grass">
+      <span class="type-badge">🌿 Grass</span>
+      <div class="feature-icon">🖥️</div>
       <h3>Xem màn hình Live</h3>
       <p>VNC viewer tích hợp. Xem lưới tất cả màn hình hoặc click vào để điều khiển trực tiếp từng iPhone.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">💧</div>
+    <div class="feature-card t-water">
+      <span class="type-badge">💧 Water</span>
+      <div class="feature-icon">⚙️</div>
       <h3>Quản lý Config hàng loạt</h3>
       <p>Sửa LICENSE_KEY, MAIL_SERVER và mọi config trực tiếp từ app. Áp dụng hàng loạt cho nhiều máy cùng lúc.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card t-psychic">
+      <span class="type-badge">🔮 Psychic</span>
       <div class="feature-icon">📱</div>
       <h3>Tương thích rộng</h3>
-      <p>Hỗ trợ iPhone 6, 6+, 7, 7+, 8, 8+, X đã Jailbreak iOS 15–16. Dùng Dopamine để jailbreak.</p>
+      <p>Hỗ trợ iPhone 6, 6+, 7, 7+, 8, 8+, X đã Jailbreak iOS 15–16. Dùng Dopamine để jailbreak dễ dàng.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔥</div>
+    <div class="feature-card t-fighting">
+      <span class="type-badge">👊 Fighting</span>
+      <div class="feature-icon">📊</div>
       <h3>Log & Monitor realtime</h3>
       <p>Stream log realtime từ mỗi thiết bị. Biết ngay máy nào lỗi, máy nào đang chạy, máy nào offline.</p>
     </div>
   </div>
 </section>
 
+<section class="journey-section">
 <section class="section" id="how">
-  <div class="section-title">Bắt đầu trong 4 bước</div>
-  <div class="section-subtitle">Từ zero đến farm chạy full chỉ mất 10 phút</div>
+  <div class="section-head">
+    <div class="section-eyebrow">★ JOURNEY</div>
+    <div class="section-title">Hành trình <span class="hl">4 bước</span></div>
+    <div class="section-subtitle">Từ zero đến farm chạy full chỉ mất 10 phút, dễ như khởi đầu hành trình Pokemon</div>
+  </div>
   <div class="steps">
     <div class="step">
+      <div class="step-num">1</div>
+      <a href="#" class="step-video">🎬 Video</a>
       <h4>Jailbreak iPhone</h4>
       <p>Jailbreak iPhone (6/6+/7/7+/8/8+/X) bằng Dopamine. Yêu cầu iOS 15 hoặc 16.</p>
-      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
     <div class="step">
+      <div class="step-num">2</div>
+      <a href="#" class="step-video">🎬 Video</a>
       <h4>Cài POKEIOSControl</h4>
-      <p>Tải app từ link admin gửi. Cài trên Windows. Cắm iPhone qua USB, bấm Trust trên điện thoại.</p>
-      <a href="#" class="step-video">🎬 Xem video</a>
+      <p>Tải app từ link admin. Cài trên Windows. Cắm iPhone qua USB, bấm Trust.</p>
     </div>
     <div class="step">
+      <div class="step-num">3</div>
+      <a href="#" class="step-video">🎬 Video</a>
       <h4>Setup & Config</h4>
       <p>Bấm Setup để cài tool lên iPhone. Điền LICENSE_KEY và MAIL_SERVER vào Config.</p>
-      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
     <div class="step">
+      <div class="step-num">4</div>
+      <a href="#" class="step-video">🎬 Video</a>
       <h4>Chạy Script</h4>
       <p>Chọn script, tick máy cần chạy, bấm Run. Xong! Ngồi xem log hoặc đi uống cà phê.</p>
-      <a href="#" class="step-video">🎬 Xem video</a>
     </div>
   </div>
 </section>
+</section>
 
 <section class="section" id="pricing">
-  <div class="section-title">Bảng giá</div>
-  <div class="section-subtitle">Mỗi license = 1 iPhone. Mua bao nhiêu tùy farm của bạn.</div>
+  <div class="section-head">
+    <div class="section-eyebrow">★ PRICING</div>
+    <div class="section-title">Bảng giá <span class="hl">Trainer Card</span></div>
+    <div class="section-subtitle">1 key = 1 tháng sử dụng. Farm càng lớn, giá càng tốt.</div>
+  </div>
   <div class="pricing-grid">
-    <div class="price-card">
-      <div class="price-name">Starter</div>
-      <div class="price-amount">200K<span>/máy</span></div>
-      <div class="price-period">30 ngày sử dụng</div>
-      <ul class="price-features">
-        <li>1 script Pokemon VIP</li>
-        <li>Hỗ trợ qua Zalo</li>
-        <li>Cập nhật script miễn phí</li>
-        <li>Fast Run từ PokemonFleet</li>
-      </ul>
-      <a href="https://t.me/IOSControl_Recap1s" class="btn btn-secondary" style="width:100%;justify-content:center">Liên hệ @IOSControl_Recap1s</a>
+    <div class="price-card starter">
+      <div class="price-header">
+        <div class="price-name">Farm Nhỏ</div>
+        <div class="price-tag">UNDER 5 DEVICES</div>
+        <div class="price-amount">600K<span>/key</span></div>
+        <div class="price-period">1 tháng · dưới 5 máy</div>
+      </div>
+      <div class="price-body">
+        <ul class="price-features">
+          <li>1 key = 1 tháng sử dụng</li>
+          <li>Tất cả scripts hiện có</li>
+          <li>Hỗ trợ qua Telegram</li>
+          <li>Cập nhật script miễn phí</li>
+          <li>Fast Run từ PokemonFleet</li>
+        </ul>
+        <a href="https://t.me/IOSControl_Recap1s" class="btn btn-secondary" style="width:100%;justify-content:center">Liên hệ ngay</a>
+      </div>
     </div>
+
     <div class="price-card popular">
-      <div class="price-name">Pro Farm</div>
-      <div class="price-amount">150K<span>/máy</span></div>
-      <div class="price-period">30 ngày · từ 5 máy trở lên</div>
-      <ul class="price-features">
-        <li>Tất cả scripts hiện có</li>
-        <li>Hỗ trợ ưu tiên 24/7</li>
-        <li>Cập nhật script miễn phí</li>
-        <li>Fast Run + VNC Viewer</li>
-        <li>Giảm thêm khi mua 10+ máy</li>
-      </ul>
-      <a href="https://t.me/IOSControl_Recap1s" class="btn btn-primary" style="width:100%;justify-content:center">Liên hệ @IOSControl_Recap1s</a>
+      <div class="popular-badge">⭐ HOT</div>
+      <div class="price-header">
+        <div class="price-name">Farm Lớn</div>
+        <div class="price-tag">5+ DEVICES</div>
+        <div class="price-amount">500K<span>/key</span></div>
+        <div class="price-period">1 tháng · từ 5 máy trở lên</div>
+      </div>
+      <div class="price-body">
+        <ul class="price-features">
+          <li>1 key = 1 tháng sử dụng</li>
+          <li>Tất cả scripts hiện có</li>
+          <li>Hỗ trợ ưu tiên 24/7</li>
+          <li>Cập nhật script miễn phí</li>
+          <li>Fast Run + VNC Viewer</li>
+          <li>Giảm thêm khi mua 10+ key</li>
+        </ul>
+        <a href="https://t.me/IOSControl_Recap1s" class="btn btn-primary" style="width:100%;justify-content:center">Liên hệ ngay</a>
+      </div>
     </div>
-    <div class="price-card">
-      <div class="price-name">Enterprise</div>
-      <div class="price-amount">Liên hệ</div>
-      <div class="price-period">Tuỳ chỉnh theo nhu cầu</div>
-      <ul class="price-features">
-        <li>Script custom theo yêu cầu</li>
-        <li>Hỗ trợ setup tận nơi</li>
-        <li>SLA cam kết uptime</li>
-        <li>Không giới hạn thiết bị</li>
-        <li>Đào tạo nhân viên vận hành</li>
-      </ul>
-      <a href="https://t.me/IOSControl_Recap1s" class="btn btn-secondary" style="width:100%;justify-content:center">Liên hệ @IOSControl_Recap1s</a>
+
+    <div class="price-card enterprise">
+      <div class="price-header">
+        <div class="price-name">Enterprise</div>
+        <div class="price-tag">CUSTOM</div>
+        <div class="price-amount" style="font-size:2.2rem">Liên hệ</div>
+        <div class="price-period">Tuỳ chỉnh theo nhu cầu</div>
+      </div>
+      <div class="price-body">
+        <ul class="price-features">
+          <li>Script custom theo yêu cầu</li>
+          <li>Hỗ trợ setup tận nơi</li>
+          <li>SLA cam kết uptime</li>
+          <li>Không giới hạn thiết bị</li>
+          <li>Đào tạo nhân viên vận hành</li>
+        </ul>
+        <a href="https://t.me/IOSControl_Recap1s" class="btn btn-secondary" style="width:100%;justify-content:center">Liên hệ ngay</a>
+      </div>
     </div>
   </div>
 </section>
 
 <footer class="footer">
+  <div class="footer-pokeballs">
+    <div class="mini-ball"></div>
+    <div class="mini-ball"></div>
+    <div class="mini-ball"></div>
+  </div>
   <p>© 2026 POKEIOSControl · Powered by <a href="https://ioscontrol.com">IOSControl</a></p>
-  <p style="margin-top:8px;font-size:0.75rem;color:var(--text3)">Sản phẩm dành cho mục đích nghiên cứu và tự động hóa hợp pháp.</p>
+  <p>Sản phẩm dành cho mục đích nghiên cứu và tự động hóa hợp pháp.</p>
 </footer>
 
 </body>

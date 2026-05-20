@@ -54,6 +54,16 @@ eventsource-stream = "0.2"
 # Process management
 which = "6"
 
+# Mail server (embedded iCloud IMAP reader)
+async-imap = "0.10"
+async-native-tls = "0.5"
+tokio-util = { version = "0.7", features = ["compat"] }
+mail-parser = "0.9"
+axum = { version = "0.7", features = ["tokio"] }
+tower-http = { version = "0.5", features = ["cors"] }
+chrono = { version = "0.4", features = ["serde"] }
+libc = "0.2"
+
 # Platform-specific
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["jobapi2", "processthreadsapi", "handleapi", "winbase", "winnt"] }

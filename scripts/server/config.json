@@ -1,0 +1,12 @@
+{
+  "imap_host": "imap.mail.me.com",
+  "imap_port": 993,
+  "imap_user": "trieusamlivn3@icloud.com",
+  "imap_pass": "pngd-ywlx-lsgs-xrkq",
+  "max_emails": 500,
+  "server_port": 5000,
+  "duckdns_subdomain": "ioscontrol1",
+  "duckdns_token": "7fad67ef-6850-4b09-8bb6-24064b5d7b4d",
+  "ngrok_token": "3DZOxvwCi5wephg9t5R9MzkHSQK_2sTJ42dQYhbtxpGKocij3",
+  "ngrok_domain": "donut-woven-hurried.ngrok-free.dev"
+}

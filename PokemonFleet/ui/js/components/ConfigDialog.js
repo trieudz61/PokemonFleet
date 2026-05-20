@@ -8,6 +8,10 @@ const KNOWN_KEYS = [
   ["MAIL_SERVER", "URL mail server (https://...)"],
 ];
 
+const TOGGLE_KEYS = [
+  ["CHANGE_IP", "✈️ Đổi IP mỗi vòng (Airplane Mode)", "Bật nếu không dùng iCloud Private Relay"],
+];
+
 export async function openConfigDialog(device, allSelected = []) {
   let config;
   try {
@@ -36,8 +40,23 @@ export async function openConfigDialog(device, allSelected = []) {
     ]));
   }
 
+  // Toggle options (checkboxes)
+  const toggleInputs = {};
+  for (const [key, label, hint] of TOGGLE_KEYS) {
+    const checked = (config[key] || "").toLowerCase() === "true";
+    const checkbox = el("input", { type: "checkbox", "data-cfg-key": key });
+    if (checked) checkbox.checked = true;
+    toggleInputs[key] = checkbox;
+    formBody.appendChild(el("div", { class: "checkbox-row" }, [
+      checkbox,
+      el("span", {}, [label]),
+      hint ? el("span", { class: "cfg-hint" }, [" — " + hint]) : null,
+    ].filter(Boolean)));
+  }
+
   // Preserve any extra keys in the file (not shown to user) so they don't get wiped on save.
-  const extras = Object.entries(config).filter(([k]) => !KNOWN_KEYS.find(([kk]) => kk === k));
+  const allKnown = [...KNOWN_KEYS.map(k => k[0]), ...TOGGLE_KEYS.map(k => k[0])];
+  const extras = Object.entries(config).filter(([k]) => !allKnown.includes(k));
 
   const applyAll = el("input", { type: "checkbox" });
   if (allSelected.length > 1) {
@@ -56,6 +75,10 @@ export async function openConfigDialog(device, allSelected = []) {
       // Overwrite with user-edited fields
       for (const [key, input] of Object.entries(inputs)) {
         newCfg[key] = input.value;
+      }
+      // Toggle options
+      for (const [key, checkbox] of Object.entries(toggleInputs)) {
+        newCfg[key] = checkbox.checked ? "true" : "false";
       }
       const targets = applyAll.checked ? allSelected : [device];
       let ok = 0, fail = 0;
