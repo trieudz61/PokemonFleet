@@ -1,4 +1,4 @@
-//! PokemonFleet — Tauri lib crate.
+//! POKEIOSControl — Tauri lib crate.
 //!
 //! Entry point invoked by both the desktop binary (`main.rs`) and any future
 //! mobile or library targets. Wires together state, plugins, and Tauri commands.
@@ -29,13 +29,13 @@ pub fn run() {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,pokemonfleet=debug")),
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,pokeioscontrol=debug")),
         )
         .with_target(false)
         .compact()
         .init();
 
-    tracing::info!("Starting PokemonFleet v{}", env!("CARGO_PKG_VERSION"));
+    tracing::info!("Starting POKEIOSControl v{}", env!("CARGO_PKG_VERSION"));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

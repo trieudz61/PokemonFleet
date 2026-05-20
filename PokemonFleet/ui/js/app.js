@@ -1,4 +1,4 @@
-// PokemonFleet — main application controller.
+// POKEIOSControl — main application controller.
 
 // [DEV] lockDownInspect disabled for debugging — re-enable before release.
 // (function lockDownInspect() {
@@ -23,7 +23,7 @@
 // })();
 
 //
-// PokemonFleet is a free companion tool. Pokemon licensing is per-iPhone and
+// POKEIOSControl is a free companion tool. Pokemon licensing is per-iPhone and
 // is managed at https://pokemon.ioscontrol.com — we read the license info
 // off each device via /api/device/info and surface it as a badge.
 

@@ -320,7 +320,7 @@ fn build_wrapper(_cfg_text: &str, source: &str, script_id: &str) -> String {
     // device, only the source body changes.
     let escaped = source.replace("]==]", "] = =]"); // defang the long-string terminator
     format!(r#"
--- PokemonFleet fast-run wrapper for {script_id}
+-- POKEIOSControl fast-run wrapper for {script_id}
 local _cfgText = readFile("Pokemon_Config.txt") or ""
 local CONFIG = {{}}
 for line in _cfgText:gmatch("[^\r\n]+") do

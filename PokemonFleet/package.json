@@ -1,7 +1,7 @@
 {
-  "name": "pokemon-fleet",
+  "name": "pokeioscontrol",
   "version": "0.1.0",
-  "description": "Windows desktop fleet manager for IOSControl jailbroken iPhones running Pokemon bots",
+  "description": "POKEIOSControl — Desktop fleet manager for jailbroken iPhones",
   "private": true,
   "type": "module",
   "scripts": {

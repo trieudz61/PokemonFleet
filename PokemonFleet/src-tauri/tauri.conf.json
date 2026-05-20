@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "POKEIOSControl",
   "version": "0.1.0",
-  "identifier": "com.ioscontrol.pokemonfleet",
+  "identifier": "com.ioscontrol.pokeioscontrol",
   "build": {
     "frontendDist": "../ui"
   },
@@ -44,7 +44,7 @@
     "externalBin": [],
     "copyright": "Copyright (c) 2026 IOSControl",
     "category": "DeveloperTool",
-    "shortDescription": "Fleet manager for jailbroken iPhones running Pokemon bots",
-    "longDescription": "Manage 10+ jailbroken iPhones via USB. Run Pokemon bots in parallel, edit configs, browse data files, and stream logs from a single Windows desktop app."
+    "shortDescription": "POKEIOSControl — Fleet manager for jailbroken iPhones",
+    "longDescription": "Manage 10+ jailbroken iPhones via USB. Run scripts in parallel, edit configs, view screens live, and stream logs from a single Windows desktop app."
   }
 }

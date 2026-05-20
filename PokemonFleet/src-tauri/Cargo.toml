@@ -1,5 +1,5 @@
 [package]
-name = "pokemonfleet"
+name = "pokeioscontrol"
 version = "0.1.0"
 description = "Fleet manager for jailbroken iPhones"
 authors = ["IOSControl"]
@@ -7,7 +7,7 @@ edition = "2021"
 rust-version = "1.77"
 
 [lib]
-name = "pokemonfleet_lib"
+name = "pokeioscontrol_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
