@@ -62,11 +62,14 @@ mail-parser = "0.9"
 axum = { version = "0.7", features = ["tokio"] }
 tower-http = { version = "0.5", features = ["cors"] }
 chrono = { version = "0.4", features = ["serde"] }
-libc = "0.2"
 
 # Platform-specific
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["jobapi2", "processthreadsapi", "handleapi", "winbase", "winnt"] }
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Threading"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 # macOS dev: nothing extra needed (libimobiledevice via Homebrew)

@@ -165,7 +165,7 @@ pub async fn mail_server_stop(
     // Kill ngrok process by PID
     if let Some(pid) = state.ngrok_pid.write().take() {
         info!("Killing ngrok process PID={}", pid);
-        unsafe { libc::kill(pid as i32, libc::SIGTERM); }
+        super::kill_process(pid);
     }
 
     *state.running.write() = false;

@@ -81,7 +81,16 @@ fn read_resource(app: &tauri::AppHandle, name: &str) -> Result<Vec<u8>, String> 
 
     let mut tried: Vec<PathBuf> = Vec::new();
 
-    // 1. Tauri-managed resource directory.
+    // 1a. Tauri-managed resource directory — file at root (Tauri 2 default).
+    if let Ok(p) = app.path().resolve(
+        name,
+        tauri::path::BaseDirectory::Resource,
+    ) {
+        if p.is_file() { return std::fs::read(&p).map_err(|e| e.to_string()); }
+        tried.push(p);
+    }
+
+    // 1b. Tauri-managed resource directory — nested in assets/ subfolder.
     if let Ok(p) = app.path().resolve(
         format!("assets/{}", name),
         tauri::path::BaseDirectory::Resource,
@@ -90,19 +99,37 @@ fn read_resource(app: &tauri::AppHandle, name: &str) -> Result<Vec<u8>, String> 
         tried.push(p);
     }
 
-    // 2-3. Walk up from the running executable.
+    // 2. Look relative to the running executable — covers NSIS install layout.
     if let Ok(exe) = std::env::current_exe() {
-        let mut cur = exe.parent().map(|p| p.to_path_buf());
-        for _ in 0..4 {
-            let Some(dir) = cur.clone() else { break; };
-            let candidate = dir.join("assets").join(name);
-            if candidate.is_file() { return std::fs::read(&candidate).map_err(|e| e.to_string()); }
-            tried.push(candidate);
-            cur = dir.parent().map(|p| p.to_path_buf());
+        if let Some(exe_dir) = exe.parent() {
+            // Direct next to exe: <exe_dir>/<name>
+            let c = exe_dir.join(name);
+            if c.is_file() { return std::fs::read(&c).map_err(|e| e.to_string()); }
+            tried.push(c);
+
+            // <exe_dir>/assets/<name>
+            let c = exe_dir.join("assets").join(name);
+            if c.is_file() { return std::fs::read(&c).map_err(|e| e.to_string()); }
+            tried.push(c);
+
+            // Tauri 2 NSIS layout: <exe_dir>/_up_/assets/<name>
+            let c = exe_dir.join("_up_").join("assets").join(name);
+            if c.is_file() { return std::fs::read(&c).map_err(|e| e.to_string()); }
+            tried.push(c);
+
+            // Walk up from exe (covers target/debug, target/release, etc.)
+            let mut cur = exe_dir.parent().map(|p| p.to_path_buf());
+            for _ in 0..3 {
+                let Some(dir) = cur.clone() else { break; };
+                let candidate = dir.join("assets").join(name);
+                if candidate.is_file() { return std::fs::read(&candidate).map_err(|e| e.to_string()); }
+                tried.push(candidate);
+                cur = dir.parent().map(|p| p.to_path_buf());
+            }
         }
     }
 
-    // 4. Compile-time-known project root — the canonical dev location.
+    // 3. Compile-time-known project root — the canonical dev location.
     let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let candidate = manifest_root.parent()
         .map(|p| p.join("assets").join(name))

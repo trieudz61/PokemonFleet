@@ -141,7 +141,7 @@ pub fn run() {
                 let mail_state: &Arc<mail_server::MailServerState> = app.state::<Arc<mail_server::MailServerState>>().inner();
                 if let Some(pid) = mail_state.ngrok_pid.write().take() {
                     tracing::info!("App exiting — killing ngrok PID={}", pid);
-                    unsafe { libc::kill(pid as i32, libc::SIGTERM); }
+                    mail_server::kill_process(pid);
                 }
             }
         });

@@ -63,3 +63,25 @@ impl MailServerState {
         }
     }
 }
+
+/// Cross-platform process termination by PID.
+///
+/// On Unix, sends SIGTERM. On Windows, calls TerminateProcess.
+pub fn kill_process(pid: u32) {
+    #[cfg(unix)]
+    {
+        unsafe { libc::kill(pid as i32, libc::SIGTERM); }
+    }
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE};
+        use windows_sys::Win32::Foundation::CloseHandle;
+        unsafe {
+            let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
+            if !handle.is_null() {
+                TerminateProcess(handle, 1);
+                CloseHandle(handle);
+            }
+        }
+    }
+}
