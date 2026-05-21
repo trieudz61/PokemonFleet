@@ -130,50 +130,36 @@ pub async fn mail_server_start(
                 format!("127.0.0.1:{}", port),
                 "--url".to_string(),
                 domain.clone(),
-                "--log".to_string(),
-                "stdout".to_string(),
             ];
 
-            // Add authtoken explicitly to ngrok config first to be sure
             if let Some(ref token) = config.ngrok_token {
                 if !token.is_empty() {
-                    info!("Configuring ngrok authtoken...");
-                    if let Ok(sidecar) = app.shell().sidecar("ngrok") {
-                        let _ = sidecar.args(["config", "add-authtoken", token]).spawn();
-                        // Give it a moment to write config
-                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                    }
+                    args.push("--authtoken".to_string());
+                    args.push(token.clone());
                 }
             }
 
+            info!("Spawning ngrok sidecar with args: {:?}", args);
+
             match app.shell().sidecar("ngrok") {
                 Ok(sidecar) => {
-                    info!("Spawning ngrok sidecar with args: {:?}", args);
                     match sidecar.args(args).spawn() {
                         Ok((mut rx, child)) => {
                             let pid = child.pid();
                             *state.ngrok_pid.write() = Some(pid);
-                            info!("ngrok sidecar successfully spawned PID={}", pid);
+                            info!("ngrok sidecar spawned PID={}", pid);
                             
-                            // Pipe ngrok output to terminal for debugging
                             tokio::spawn(async move {
                                 use tauri_plugin_shell::process::CommandEvent;
                                 while let Some(event) = rx.recv().await {
                                     match event {
-                                        CommandEvent::Stdout(line) => {
-                                            info!("[ngrok] {}", String::from_utf8_lossy(&line).trim());
-                                        }
-                                        CommandEvent::Stderr(line) => {
-                                            tracing::warn!("[ngrok-err] {}", String::from_utf8_lossy(&line).trim());
-                                        }
-                                        CommandEvent::Terminated(payload) => {
-                                            tracing::error!("[ngrok-exit] Code: {:?}", payload.code);
-                                        }
+                                        CommandEvent::Stdout(line) => info!("[ngrok] {}", String::from_utf8_lossy(&line).trim()),
+                                        CommandEvent::Stderr(line) => tracing::warn!("[ngrok-err] {}", String::from_utf8_lossy(&line).trim()),
+                                        CommandEvent::Terminated(p) => tracing::error!("[ngrok-terminated] exit code: {:?}", p.code),
                                         _ => {}
                                     }
                                 }
                             });
-
                             format!("https://{}", domain)
                         }
                         Err(e) => {
