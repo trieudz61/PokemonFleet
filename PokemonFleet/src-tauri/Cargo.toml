@@ -1,6 +1,6 @@
 [package]
 name = "pokeioscontrol"
-version = "0.1.0"
+version = "1.1.0"
 description = "Fleet manager for jailbroken iPhones"
 authors = ["IOSControl"]
 edition = "2021"
