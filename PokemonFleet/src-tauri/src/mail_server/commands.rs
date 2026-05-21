@@ -98,11 +98,30 @@ pub async fn mail_server_start(
         super::http_api::run(http_state, port).await;
     });
 
+    // Wait for HTTP server to be ready before starting ngrok
+    {
+        let addr = format!("127.0.0.1:{}", port);
+        info!("Waiting for HTTP server to bind on {}...", addr);
+        let mut ready = false;
+        for i in 0..50 {
+            // Try to connect to the port
+            if std::net::TcpStream::connect(&addr).is_ok() {
+                info!("HTTP server is ready on {} (after {}ms)", addr, i * 100);
+                ready = true;
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+        if !ready {
+            tracing::warn!("HTTP server did not become ready within 5s on {}", addr);
+        }
+    }
+
     // Start ngrok tunnel if domain is configured
     let mut ngrok_error = None;
     let url = if let Some(ref domain) = config.ngrok_domain {
         if !domain.is_empty() {
-            info!("Starting bundled ngrok sidecar: {} -> localhost:{}", domain, port);
+            info!("Starting bundled ngrok sidecar: {} -> 127.0.0.1:{}", domain, port);
             
             use tauri_plugin_shell::ShellExt;
 
