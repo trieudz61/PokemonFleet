@@ -15,6 +15,7 @@ use parking_lot::Mutex;
 use std::collections::{HashMap, HashSet};
 use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
+use tauri::{AppHandle, Manager};
 
 /// Slot → local-port mapping that mirrors the convention baked into the
 /// IOSControl Web IDE (`static/app.js`):
@@ -66,7 +67,7 @@ impl TunnelPool {
 
     /// Spawn three iproxy children for the given UDID and return the IDE port.
     /// Idempotent: if a tunnel already exists, returns the cached IDE port.
-    pub fn ensure(&self, udid: &str) -> Result<u16> {
+    pub fn ensure(&self, udid: &str, app: &AppHandle) -> Result<u16> {
         let mut inner = self.inner.lock();
         if let Some(t) = inner.tunnels.get(udid) {
             return Ok(t.ide_port);
@@ -74,7 +75,7 @@ impl TunnelPool {
 
         let slot = pick_slot(&inner.used_slots, udid)
             .ok_or_else(|| anyhow!("tunnel pool full ({} slots)", MAX_SLOTS))?;
-        let iproxy = locate_iproxy()?;
+        let iproxy = locate_iproxy(Some(app))?;
 
         let ide_port      = 9990 + slot as u16;
         let vnc_html_port = 5902 + (slot as u16) * 10;
@@ -205,8 +206,18 @@ fn pick_slot(used: &HashSet<u8>, udid: &str) -> Option<u8> {
 ///   1. `<exe-dir>/binaries/iproxy[.exe]`            — dev / portable layout
 ///   2. `<exe-dir>/resources/binaries/iproxy[.exe]`  — Windows MSI / NSIS
 ///   3. PATH (Homebrew on macOS, `setup.exe` install on Windows)
-fn locate_iproxy() -> Result<std::path::PathBuf> {
-    let path = crate::utils::locate_binary("iproxy");
+fn locate_iproxy(app: Option<&AppHandle>) -> Result<std::path::PathBuf> {
+    let mut path = crate::utils::locate_binary("iproxy");
+    
+    if let Some(app) = app {
+        use tauri::path::BaseDirectory;
+        if let Ok(res_path) = app.path().resolve("binaries/iproxy.exe", BaseDirectory::Resource) {
+            if res_path.exists() {
+                path = res_path;
+            }
+        }
+    }
+
     if path.exists() {
         Ok(path)
     } else {

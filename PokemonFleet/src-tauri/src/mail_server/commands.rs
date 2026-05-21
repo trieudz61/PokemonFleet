@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 use tauri::{State, Manager};
-use tracing::info;
+use tracing::{info, warn};
 use crate::utils::locate_binary;
 
 use super::{MailServerState, config::MailConfig};
@@ -68,6 +68,7 @@ pub async fn mail_server_load_config(
 /// Start the mail server (IMAP poller + HTTP API + ngrok tunnel).
 #[tauri::command]
 pub async fn mail_server_start(
+    app: tauri::AppHandle,
     state: State<'_, Arc<MailServerState>>,
 ) -> CmdResult<String> {
     // Check if already running
@@ -105,13 +106,18 @@ pub async fn mail_server_start(
             
             // Try standard name first, then bundled name if on Windows
             let mut ngrok_path = locate_binary("ngrok");
+            
             #[cfg(windows)]
             {
+                // If not found in PATH, try resolving via Tauri resources
                 if !ngrok_path.exists() || ngrok_path.to_string_lossy() == "ngrok.exe" {
-                   let bundled = locate_binary("ngrok-x86_64-pc-windows-msvc");
-                   if bundled.exists() {
-                       ngrok_path = bundled;
-                   }
+                    // Try the long architecture-specific name in resources/binaries
+                    use tauri::path::BaseDirectory;
+                    if let Ok(res_path) = app.path().resolve("binaries/ngrok-x86_64-pc-windows-msvc.exe", BaseDirectory::Resource) {
+                        if res_path.exists() {
+                            ngrok_path = res_path;
+                        }
+                    }
                 }
             }
 
@@ -128,18 +134,24 @@ pub async fn mail_server_start(
                 }
             }
 
-            // Suppress ngrok output
+            // Suppress ngrok output and window on Windows
             cmd.stdout(std::process::Stdio::null())
                 .stderr(std::process::Stdio::null());
+                
+            #[cfg(windows)]
+            {
+                use std::os::windows::process::CommandExt;
+                cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+            }
 
             match cmd.spawn() {
                 Ok(child) => {
                     let pid = child.id();
                     *state.ngrok_pid.write() = Some(pid);
-                    info!("ngrok process spawned PID={} for {}", pid, domain);
+                    info!("ngrok process spawned PID={} for {} using path: {:?}", pid, domain, ngrok_path);
                 }
                 Err(e) => {
-                    tracing::warn!("Failed to start ngrok: {}. Is ngrok installed?", e);
+                    warn!("Failed to start ngrok: {}. Path attempted: {:?}", e, ngrok_path);
                 }
             }
             format!("https://{}", domain)

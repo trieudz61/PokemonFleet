@@ -21,7 +21,7 @@ use std::collections::HashSet;
 use std::process::Command;
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 /// Bag of dependencies for the watcher loop. Avoids fat function signatures.
 pub struct WatcherDeps {
@@ -40,7 +40,7 @@ pub async fn run(deps: WatcherDeps) {
     let mut prev: HashSet<String> = HashSet::new();
 
     loop {
-        match enumerate_udids() {
+        match enumerate_udids(&deps.app) {
             Ok(current) => {
                 let cur_set: HashSet<String> = current.iter().cloned().collect();
 
@@ -73,8 +73,14 @@ pub async fn run(deps: WatcherDeps) {
 }
 
 /// Run `idevice_id -l` and return the list of UDIDs.
-fn enumerate_udids() -> Result<Vec<String>> {
-    let path = crate::utils::locate_binary("idevice_id");
+fn enumerate_udids(app: &AppHandle) -> Result<Vec<String>> {
+    let mut path = crate::utils::locate_binary("idevice_id");
+    use tauri::path::BaseDirectory;
+    if let Ok(res_path) = app.path().resolve("binaries/idevice_id.exe", BaseDirectory::Resource) {
+        if res_path.exists() {
+            path = res_path;
+        }
+    }
 
 
     let mut cmd = Command::new(&path);
@@ -105,7 +111,7 @@ async fn handle_attach(deps: &WatcherDeps, udid: &str) -> Result<()> {
     tracing::info!(udid = %udid, "device attached");
 
     // 1. Spawn iproxy tunnel.
-    let port = deps.tunnel_pool.ensure(udid)?;
+    let port = deps.tunnel_pool.ensure(udid, &deps.app)?;
 
     // 2. Wait briefly for iproxy + iOS HTTP server to become reachable.
     let mut info = None;

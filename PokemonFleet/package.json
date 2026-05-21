@@ -1,6 +1,6 @@
 {
   "name": "pokeioscontrol",
-  "version": "1.12.4",
+  "version": "1.12.5",
   "description": "POKEIOSControl — Desktop fleet manager for jailbroken iPhones",
   "private": true,
   "type": "module",
