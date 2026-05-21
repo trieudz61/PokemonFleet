@@ -101,7 +101,24 @@ pub async fn mail_server_start(
     let url = if let Some(ref domain) = config.ngrok_domain {
         if !domain.is_empty() {
             info!("Starting ngrok tunnel: {} -> localhost:{}", domain, port);
-            let mut cmd = std::process::Command::new("ngrok");
+            
+            // Try to find ngrok.exe next to our own executable first
+            let ngrok_binary = if let Ok(exe_path) = std::env::current_exe() {
+                if let Some(exe_dir) = exe_path.parent() {
+                    let local_ngrok = exe_dir.join("ngrok.exe");
+                    if local_ngrok.exists() {
+                        local_ngrok.to_string_lossy().into_owned()
+                    } else {
+                        "ngrok".to_string()
+                    }
+                } else {
+                    "ngrok".to_string()
+                }
+            } else {
+                "ngrok".to_string()
+            };
+
+            let mut cmd = std::process::Command::new(&ngrok_binary);
             cmd.arg("http")
                 .arg(format!("{}", port))
                 .arg("--url")
@@ -122,10 +139,12 @@ pub async fn mail_server_start(
                 Ok(child) => {
                     let pid = child.id();
                     *state.ngrok_pid.write() = Some(pid);
-                    info!("ngrok process spawned PID={} for {}", pid, domain);
+                    info!("ngrok process spawned (binary: {}) PID={} for {}", ngrok_binary, pid, domain);
                 }
                 Err(e) => {
-                    tracing::warn!("Failed to start ngrok: {}. Is ngrok installed?", e);
+                    let msg = format!("Failed to start ngrok ({}): {}. Ensure ngrok is installed or placed in the app folder.", ngrok_binary, e);
+                    tracing::error!("{}", msg);
+                    return Err(msg);
                 }
             }
             format!("https://{}", domain)
