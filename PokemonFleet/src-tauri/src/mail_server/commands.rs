@@ -99,6 +99,7 @@ pub async fn mail_server_start(
     });
 
     // Start ngrok tunnel if domain is configured
+    let mut ngrok_error = None;
     let url = if let Some(ref domain) = config.ngrok_domain {
         if !domain.is_empty() {
             info!("Starting bundled ngrok sidecar: {} -> localhost:{}", domain, port);
@@ -127,21 +128,23 @@ pub async fn mail_server_start(
                             let pid = child.pid();
                             *state.ngrok_pid.write() = Some(pid);
                             info!("ngrok sidecar spawned PID={} for {}", pid, domain);
+                            format!("https://{}", domain)
                         }
                         Err(e) => {
                             let msg = format!("Failed to spawn ngrok sidecar: {}", e);
                             tracing::error!("{}", msg);
-                            return Err(msg);
+                            ngrok_error = Some(msg);
+                            format!("http://localhost:{}", port)
                         }
                     }
                 }
                 Err(e) => {
-                    let msg = format!("Failed to locate ngrok sidecar: {}", e);
-                    tracing::error!("{}", msg);
-                    return Err(msg);
+                    let msg = format!("Failed to locate ngrok sidecar binary: {}. Using localhost only.", e);
+                    tracing::warn!("{}", msg);
+                    ngrok_error = Some(msg);
+                    format!("http://localhost:{}", port)
                 }
             }
-            format!("https://{}", domain)
         } else {
             format!("http://localhost:{}", port)
         }
@@ -154,8 +157,13 @@ pub async fn mail_server_start(
     *state.http_handle.write() = Some(http_handle);
     *state.public_url.write() = Some(url.clone());
 
-    info!("Mail server started on {}", url);
-    Ok(url)
+    if let Some(err) = ngrok_error {
+        info!("Mail server started on {} (Local only due to Ngrok error: {})", url, err);
+        Ok(format!("started_with_ngrok_error:{}", err))
+    } else {
+        info!("Mail server started on {}", url);
+        Ok(url)
+    }
 }
 
 /// Stop the mail server.
