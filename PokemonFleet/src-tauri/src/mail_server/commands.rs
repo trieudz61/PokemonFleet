@@ -131,21 +131,24 @@ pub async fn mail_server_start(
                 "--url".to_string(),
                 domain.clone(),
                 "--log".to_string(),
-                "stdout".to_string()
+                "stdout".to_string(),
             ];
 
-            // Add authtoken if provided
+            // Add authtoken explicitly to ngrok config first to be sure
             if let Some(ref token) = config.ngrok_token {
                 if !token.is_empty() {
-                    args.push("--authtoken".to_string());
-                    args.push(token.clone());
+                    info!("Configuring ngrok authtoken...");
+                    if let Ok(sidecar) = app.shell().sidecar("ngrok") {
+                        let _ = sidecar.args(["config", "add-authtoken", token]).spawn();
+                        // Give it a moment to write config
+                        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                    }
                 }
             }
 
-            info!("Attempting to spawn ngrok sidecar with args: {:?}", args);
-
             match app.shell().sidecar("ngrok") {
                 Ok(sidecar) => {
+                    info!("Spawning ngrok sidecar with args: {:?}", args);
                     match sidecar.args(args).spawn() {
                         Ok((mut rx, child)) => {
                             let pid = child.pid();
