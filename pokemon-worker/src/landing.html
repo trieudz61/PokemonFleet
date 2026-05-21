@@ -594,6 +594,95 @@ body::before {
 }
 .step-video:hover { transform: translateY(-2px); background: var(--poke-red); }
 
+/* ─── Featured Step (Step 0 — big panel) ─── */
+.step-featured {
+  background: linear-gradient(135deg, var(--poke-yellow) 0%, #FFF3C4 100%);
+  border: 4px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px 32px;
+  box-shadow: 0 8px 0 var(--border), 0 12px 30px rgba(255,203,5,0.3);
+  position: relative;
+  margin-bottom: 28px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.step-featured:hover { transform: translateY(-4px); box-shadow: 0 12px 0 var(--border), 0 16px 36px rgba(255,203,5,0.4); }
+.step-featured .step-num {
+  position: absolute;
+  top: -24px; left: 50%;
+  transform: translateX(-50%);
+  width: 52px; height: 52px;
+  background: var(--poke-red);
+  color: white;
+  border: 4px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 0 var(--border);
+}
+.step-featured-icon {
+  font-size: 3.5rem;
+  margin: 12px 0 8px;
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.15));
+  animation: float 3s ease-in-out infinite;
+}
+.step-featured h4 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.step-featured p {
+  color: var(--text2);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.step-featured .step-video {
+  position: absolute;
+  top: -14px; right: 20px;
+  background: var(--poke-red);
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* ─── Step Download Buttons ─── */
+.step-downloads {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.step-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  padding: 6px 14px;
+  background: var(--poke-blue);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--border);
+  text-decoration: none;
+  box-shadow: 0 3px 0 var(--border);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.step-dl-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--border);
+  background: var(--poke-blue-dark);
+}
+
 /* ─── Pricing (Trainer Cards) ─── */
 .pricing-grid {
   display: grid;
@@ -770,7 +859,7 @@ body::before {
   .header-inner { padding: 10px 16px; }
   .pokeball { width: 36px; height: 36px; }
   .logo-text { font-size: 1.15rem; text-shadow: 1px 1px 0 var(--border); }
-  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-links a:not(.nav-cta) { font-size: 0.7rem; padding: 6px 8px; }
   .nav-cta { padding: 8px 14px !important; font-size: 0.78rem !important; }
 
   .hero { padding: 40px 16px 30px; }
@@ -914,31 +1003,46 @@ body::before {
 <section class="section" id="how">
   <div class="section-head">
     <div class="section-eyebrow">★ JOURNEY</div>
-    <div class="section-title">Hành trình <span class="hl">4 bước</span></div>
+    <div class="section-title">Hành trình <span class="hl">5 bước</span></div>
     <div class="section-subtitle">Từ zero đến farm chạy full chỉ mất 10 phút, dễ như khởi đầu hành trình Pokemon</div>
+  </div>
+  <div class="step step-featured">
+    <div class="step-num">0</div>
+    <a href="https://www.youtube.com/watch?v=UwCdPDY1MRs" target="_blank" class="step-video">🎬 Xem Video</a>
+    <div class="step-featured-icon">💥</div>
+    <h4>Chuẩn bị gì trước khi dùng tools?</h4>
+    <p>Xem video tổng quan để biết cần chuẩn bị những gì: thiết bị, cáp USB, phần mềm, tài khoản... Đừng bỏ qua bước này!</p>
   </div>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
-      <a href="#" class="step-video">🎬 Video</a>
+      <a href="https://www.youtube.com/watch?v=F6dvpVWqsZo&t=48s" target="_blank" class="step-video">🎬 Video</a>
       <h4>Jailbreak iPhone</h4>
       <p>Jailbreak iPhone (6/6+/7/7+/8/8+/X) bằng Dopamine. Yêu cầu iOS 15 hoặc 16.</p>
+      <div class="step-downloads">
+        <a href="https://github.com/opa334/Dopamine/releases/download/2.5b3/Dopamine.ipa" class="step-dl-btn">⬇ Dopamine.ipa</a>
+        <a href="https://sideloadly.io/SideloadlySetup64.exe" class="step-dl-btn">⬇ Sideloadly</a>
+        <a href="https://dl.3u.com/update/v900/dl/windows/3uTools_v9.06.006_Setup_x64.exe" class="step-dl-btn">⬇ 3uTools</a>
+      </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <a href="#" class="step-video">🎬 Video</a>
+      <a href="https://youtu.be/0o4dgaI369w?si=cweQHVneCf83ATGe" target="_blank" class="step-video">🎬 Video</a>
       <h4>Cài POKEIOSControl</h4>
       <p>Tải app từ link admin. Cài trên Windows. Cắm iPhone qua USB, bấm Trust.</p>
+      <div class="step-downloads">
+        <a href="https://github.com/trieudz61/PokemonFleet/releases/download/v0.1.0/POKEIOSControl_0.1.0_x64_en-US.msi" class="step-dl-btn">⬇ Tải POKEIOSControl</a>
+      </div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <a href="#" class="step-video">🎬 Video</a>
+      <a href="https://youtu.be/WPe237TxiV0?si=91C4s6D5jJfAPVha" target="_blank" class="step-video">🎬 Video</a>
       <h4>Setup & Config</h4>
       <p>Bấm Setup để cài tool lên iPhone. Điền LICENSE_KEY và MAIL_SERVER vào Config.</p>
     </div>
     <div class="step">
       <div class="step-num">4</div>
-      <a href="#" class="step-video">🎬 Video</a>
+      <a href="https://youtu.be/9DL4B7DDDhg?si=t68rV8Cj5W641Ps_" target="_blank" class="step-video">🎬 Video</a>
       <h4>Chạy Script</h4>
       <p>Chọn script, tick máy cần chạy, bấm Run. Xong! Ngồi xem log hoặc đi uống cà phê.</p>
     </div>
@@ -950,7 +1054,7 @@ body::before {
   <div class="section-head">
     <div class="section-eyebrow">★ PRICING</div>
     <div class="section-title">Bảng giá <span class="hl">Trainer Card</span></div>
-    <div class="section-subtitle"><strong>1 key = 1 máy = 1 tháng</strong>. Mỗi key gắn cố định cho 1 thiết bị, dùng trong 30 ngày. Farm càng lớn, giá càng tốt.</div>
+    <div class="section-subtitle"><strong>1 key = 1 máy = Vĩnh viễn</strong>. Mỗi key gắn cố định cho 1 thiết bị, dùng trọn đời. Farm càng lớn, giá càng tốt.</div>
   </div>
   <div class="pricing-grid">
     <div class="price-card starter">
@@ -962,7 +1066,7 @@ body::before {
       </div>
       <div class="price-body">
         <ul class="price-features">
-          <li><strong>1 key = 1 máy = 1 tháng</strong></li>
+          <li><strong>1 key = 1 máy = Vĩnh viễn</strong></li>
           <li>Khoá theo UDID — chống chia sẻ</li>
           <li>Tất cả scripts hiện có</li>
           <li>Hỗ trợ qua Telegram</li>
@@ -983,7 +1087,7 @@ body::before {
       </div>
       <div class="price-body">
         <ul class="price-features">
-          <li><strong>1 key = 1 máy = 1 tháng</strong></li>
+          <li><strong>1 key = 1 máy = Vĩnh viễn</strong></li>
           <li>Khoá theo UDID — chống chia sẻ</li>
           <li>Tất cả scripts hiện có</li>
           <li>Hỗ trợ ưu tiên 24/7</li>
