@@ -108,7 +108,7 @@ pub async fn mail_server_start(
 
             let mut args = vec![
                 "http".to_string(), 
-                format!("{}", port),
+                format!("127.0.0.1:{}", port),
                 "--url".to_string(),
                 domain.clone()
             ];
@@ -134,7 +134,7 @@ pub async fn mail_server_start(
                             let msg = format!("Failed to spawn ngrok sidecar: {}", e);
                             tracing::error!("{}", msg);
                             ngrok_error = Some(msg);
-                            format!("http://localhost:{}", port)
+                            format!("http://127.0.0.1:{}", port)
                         }
                     }
                 }
@@ -142,14 +142,14 @@ pub async fn mail_server_start(
                     let msg = format!("Failed to locate ngrok sidecar binary: {}. Using localhost only.", e);
                     tracing::warn!("{}", msg);
                     ngrok_error = Some(msg);
-                    format!("http://localhost:{}", port)
+                    format!("http://127.0.0.1:{}", port)
                 }
             }
         } else {
-            format!("http://localhost:{}", port)
+            format!("http://127.0.0.1:{}", port)
         }
     } else {
-        format!("http://localhost:{}", port)
+        format!("http://127.0.0.1:{}", port)
     };
 
     *state.running.write() = true;
