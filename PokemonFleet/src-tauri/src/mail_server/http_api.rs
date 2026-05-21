@@ -102,8 +102,8 @@ pub async fn run(state: Arc<MailServerState>, port: u16) {
         .layer(CorsLayer::permissive())
         .with_state(state);
 
-    let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
-    info!("Mail HTTP API listening on http://127.0.0.1:{}", port);
+    let addr = std::net::SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], port));
+    info!("Mail HTTP API listening on [::]:{}", port);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
