@@ -3,6 +3,7 @@
 use std::sync::Arc;
 use tauri::{State, Manager};
 use tracing::info;
+use crate::utils::locate_binary;
 
 use super::{MailServerState, config::MailConfig};
 
@@ -67,7 +68,6 @@ pub async fn mail_server_load_config(
 /// Start the mail server (IMAP poller + HTTP API + ngrok tunnel).
 #[tauri::command]
 pub async fn mail_server_start(
-    app: tauri::AppHandle,
     state: State<'_, Arc<MailServerState>>,
 ) -> CmdResult<String> {
     // Check if already running
@@ -98,90 +98,56 @@ pub async fn mail_server_start(
         super::http_api::run(http_state, port).await;
     });
 
-    // Wait for HTTP server to be ready before starting ngrok
-    {
-        let addr = format!("127.0.0.1:{}", port);
-        info!("Waiting for HTTP server to bind on {}...", addr);
-        let mut ready = false;
-        for i in 0..50 {
-            // Try to connect to the port
-            if std::net::TcpStream::connect(&addr).is_ok() {
-                info!("HTTP server is ready on {} (after {}ms)", addr, i * 100);
-                ready = true;
-                break;
-            }
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-        }
-        if !ready {
-            tracing::warn!("HTTP server did not become ready within 5s on {}", addr);
-        }
-    }
-
     // Start ngrok tunnel if domain is configured
-    let mut ngrok_error = None;
     let url = if let Some(ref domain) = config.ngrok_domain {
         if !domain.is_empty() {
-            info!("Starting bundled ngrok sidecar: {} -> 127.0.0.1:{}", domain, port);
+            info!("Starting ngrok tunnel: {} -> localhost:{}", domain, port);
             
-            use tauri_plugin_shell::ShellExt;
+            // Try standard name first, then bundled name if on Windows
+            let mut ngrok_path = locate_binary("ngrok");
+            #[cfg(windows)]
+            {
+                if !ngrok_path.exists() || ngrok_path.to_string_lossy() == "ngrok.exe" {
+                   let bundled = locate_binary("ngrok-x86_64-pc-windows-msvc");
+                   if bundled.exists() {
+                       ngrok_path = bundled;
+                   }
+                }
+            }
 
-            let mut args = vec![
-                "http".to_string(), 
-                format!("127.0.0.1:{}", port),
-                "--url".to_string(),
-                domain.clone(),
-            ];
+            let mut cmd = std::process::Command::new(&ngrok_path);
+            cmd.arg("http")
+                .arg(format!("{}", port))
+                .arg("--url")
+                .arg(domain);
 
+            // Add authtoken if provided
             if let Some(ref token) = config.ngrok_token {
                 if !token.is_empty() {
-                    args.push("--authtoken".to_string());
-                    args.push(token.clone());
+                    cmd.arg("--authtoken").arg(token);
                 }
             }
 
-            info!("Spawning ngrok sidecar with args: {:?}", args);
+            // Suppress ngrok output
+            cmd.stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null());
 
-            match app.shell().sidecar("ngrok") {
-                Ok(sidecar) => {
-                    match sidecar.args(args).spawn() {
-                        Ok((mut rx, child)) => {
-                            let pid = child.pid();
-                            *state.ngrok_pid.write() = Some(pid);
-                            info!("ngrok sidecar spawned PID={}", pid);
-                            
-                            tokio::spawn(async move {
-                                use tauri_plugin_shell::process::CommandEvent;
-                                while let Some(event) = rx.recv().await {
-                                    match event {
-                                        CommandEvent::Stdout(line) => info!("[ngrok] {}", String::from_utf8_lossy(&line).trim()),
-                                        CommandEvent::Stderr(line) => tracing::warn!("[ngrok-err] {}", String::from_utf8_lossy(&line).trim()),
-                                        CommandEvent::Terminated(p) => tracing::error!("[ngrok-terminated] exit code: {:?}", p.code),
-                                        _ => {}
-                                    }
-                                }
-                            });
-                            format!("https://{}", domain)
-                        }
-                        Err(e) => {
-                            let msg = format!("Failed to spawn ngrok sidecar: {}", e);
-                            tracing::error!("{}", msg);
-                            ngrok_error = Some(msg);
-                            format!("http://127.0.0.1:{}", port)
-                        }
-                    }
+            match cmd.spawn() {
+                Ok(child) => {
+                    let pid = child.id();
+                    *state.ngrok_pid.write() = Some(pid);
+                    info!("ngrok process spawned PID={} for {}", pid, domain);
                 }
                 Err(e) => {
-                    let msg = format!("Failed to locate ngrok sidecar binary: {}. Using localhost only.", e);
-                    tracing::warn!("{}", msg);
-                    ngrok_error = Some(msg);
-                    format!("http://127.0.0.1:{}", port)
+                    tracing::warn!("Failed to start ngrok: {}. Is ngrok installed?", e);
                 }
             }
+            format!("https://{}", domain)
         } else {
-            format!("http://127.0.0.1:{}", port)
+            format!("http://localhost:{}", port)
         }
     } else {
-        format!("http://127.0.0.1:{}", port)
+        format!("http://localhost:{}", port)
     };
 
     *state.running.write() = true;
@@ -189,13 +155,8 @@ pub async fn mail_server_start(
     *state.http_handle.write() = Some(http_handle);
     *state.public_url.write() = Some(url.clone());
 
-    if let Some(err) = ngrok_error {
-        info!("Mail server started on {} (Local only due to Ngrok error: {})", url, err);
-        Ok(format!("started_with_ngrok_error:{}", err))
-    } else {
-        info!("Mail server started on {}", url);
-        Ok(url)
-    }
+    info!("Mail server started on {}", url);
+    Ok(url)
 }
 
 /// Stop the mail server.

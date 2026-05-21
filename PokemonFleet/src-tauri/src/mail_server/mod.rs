@@ -11,7 +11,7 @@ pub mod imap_poller;
 pub mod http_api;
 pub mod commands;
 
-use std::sync::Arc;
+
 use parking_lot::RwLock;
 use tokio::task::JoinHandle;
 

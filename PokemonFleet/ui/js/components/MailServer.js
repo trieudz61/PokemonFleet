@@ -158,16 +158,9 @@ export async function openMailServer() {
       // Stop if running
       try { await invoke("mail_server_stop"); } catch {}
       // Start
-      let url = await invoke("mail_server_start");
-      if (url.startsWith("started_with_ngrok_error:")) {
-        const error = url.replace("started_with_ngrok_error:", "");
-        updateStatus(true, `⚠️ Running (Local) — Ngrok error: ${error.substring(0, 30)}...`);
-        toast("⚠️ Mail server started but tunnel failed. Using Local URL.", "warning");
-        console.error("[MailServer] Ngrok error:", error);
-      } else {
-        updateStatus(true, `✅ Running — ${url}`);
-        toast("▶ Mail server started: " + url, "success");
-      }
+      const url = await invoke("mail_server_start");
+      updateStatus(true, `✅ Running — ${url}`);
+      toast("▶ Mail server started: " + url, "success");
     } catch (e) {
       updateStatus(false, "❌ Error: " + e);
       toast("Lỗi start: " + e, "error");

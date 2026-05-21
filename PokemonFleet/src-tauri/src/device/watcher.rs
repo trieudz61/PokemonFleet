@@ -74,29 +74,7 @@ pub async fn run(deps: WatcherDeps) {
 
 /// Run `idevice_id -l` and return the list of UDIDs.
 fn enumerate_udids() -> Result<Vec<String>> {
-    let exe = if cfg!(windows) { "idevice_id.exe" } else { "idevice_id" };
-
-    // Prefer bundled sidecar. Search order:
-    //   1. <exe-dir>/binaries/<name>            — dev + portable layouts
-    //   2. <exe-dir>/resources/binaries/<name>  — Windows MSI/NSIS install
-    //   3. plain `idevice_id` on PATH           — dev macOS w/ Homebrew
-    let path = if let Ok(exe_path) = std::env::current_exe() {
-        if let Some(dir) = exe_path.parent() {
-            let candidate = dir.join("binaries").join(exe);
-            let resources = dir.join("resources").join("binaries").join(exe);
-            if candidate.is_file() {
-                candidate
-            } else if resources.is_file() {
-                resources
-            } else {
-                which::which(exe)?
-            }
-        } else {
-            which::which(exe)?
-        }
-    } else {
-        which::which(exe)?
-    };
+    let path = crate::utils::locate_binary("idevice_id");
 
 
     let mut cmd = Command::new(&path);

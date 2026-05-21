@@ -206,23 +206,12 @@ fn pick_slot(used: &HashSet<u8>, udid: &str) -> Option<u8> {
 ///   2. `<exe-dir>/resources/binaries/iproxy[.exe]`  — Windows MSI / NSIS
 ///   3. PATH (Homebrew on macOS, `setup.exe` install on Windows)
 fn locate_iproxy() -> Result<std::path::PathBuf> {
-    let exe_name = if cfg!(windows) { "iproxy.exe" } else { "iproxy" };
-
-    if let Ok(exe_path) = std::env::current_exe() {
-        if let Some(dir) = exe_path.parent() {
-            let candidate = dir.join("binaries").join(exe_name);
-            if candidate.is_file() {
-                return Ok(candidate);
-            }
-            let resources = dir.join("resources").join("binaries").join(exe_name);
-            if resources.is_file() {
-                return Ok(resources);
-            }
-        }
+    let path = crate::utils::locate_binary("iproxy");
+    if path.exists() {
+        Ok(path)
+    } else {
+        Err(anyhow!("iproxy not found — install libimobiledevice (brew install libimobiledevice on macOS)"))
     }
-
-    which::which(exe_name)
-        .map_err(|_| anyhow!("iproxy not found — install libimobiledevice (brew install libimobiledevice on macOS)"))
 }
 
 // ─────────────────────────── Windows Job Object ───────────────────────────
