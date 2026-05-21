@@ -41,7 +41,9 @@
       "../assets/Pokemon_Config.template.txt",
       "binaries/*"
     ],
-    "externalBin": [],
+    "externalBin": [
+      "binaries/ngrok"
+    ],
     "copyright": "Copyright (c) 2026 IOSControl",
     "category": "DeveloperTool",
     "shortDescription": "POKEIOSControl — Fleet manager for jailbroken iPhones",

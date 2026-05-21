@@ -67,6 +67,7 @@ pub async fn mail_server_load_config(
 /// Start the mail server (IMAP poller + HTTP API + ngrok tunnel).
 #[tauri::command]
 pub async fn mail_server_start(
+    app: tauri::AppHandle,
     state: State<'_, Arc<MailServerState>>,
 ) -> CmdResult<String> {
     // Check if already running
@@ -100,49 +101,42 @@ pub async fn mail_server_start(
     // Start ngrok tunnel if domain is configured
     let url = if let Some(ref domain) = config.ngrok_domain {
         if !domain.is_empty() {
-            info!("Starting ngrok tunnel: {} -> localhost:{}", domain, port);
+            info!("Starting bundled ngrok sidecar: {} -> localhost:{}", domain, port);
             
-            // Try to find ngrok.exe next to our own executable first
-            let ngrok_binary = if let Ok(exe_path) = std::env::current_exe() {
-                if let Some(exe_dir) = exe_path.parent() {
-                    let local_ngrok = exe_dir.join("ngrok.exe");
-                    if local_ngrok.exists() {
-                        local_ngrok.to_string_lossy().into_owned()
-                    } else {
-                        "ngrok".to_string()
-                    }
-                } else {
-                    "ngrok".to_string()
-                }
-            } else {
-                "ngrok".to_string()
-            };
+            use tauri_plugin_shell::ShellExt;
 
-            let mut cmd = std::process::Command::new(&ngrok_binary);
-            cmd.arg("http")
-                .arg(format!("{}", port))
-                .arg("--url")
-                .arg(domain);
+            let mut args = vec![
+                "http".to_string(), 
+                format!("{}", port),
+                "--url".to_string(),
+                domain.clone()
+            ];
 
             // Add authtoken if provided
             if let Some(ref token) = config.ngrok_token {
                 if !token.is_empty() {
-                    cmd.arg("--authtoken").arg(token);
+                    args.push("--authtoken".to_string());
+                    args.push(token.clone());
                 }
             }
 
-            // Suppress ngrok output
-            cmd.stdout(std::process::Stdio::null())
-                .stderr(std::process::Stdio::null());
-
-            match cmd.spawn() {
-                Ok(child) => {
-                    let pid = child.id();
-                    *state.ngrok_pid.write() = Some(pid);
-                    info!("ngrok process spawned (binary: {}) PID={} for {}", ngrok_binary, pid, domain);
+            match app.shell().sidecar("ngrok") {
+                Ok(sidecar) => {
+                    match sidecar.args(args).spawn() {
+                        Ok((_rx, child)) => {
+                            let pid = child.pid();
+                            *state.ngrok_pid.write() = Some(pid);
+                            info!("ngrok sidecar spawned PID={} for {}", pid, domain);
+                        }
+                        Err(e) => {
+                            let msg = format!("Failed to spawn ngrok sidecar: {}", e);
+                            tracing::error!("{}", msg);
+                            return Err(msg);
+                        }
+                    }
                 }
                 Err(e) => {
-                    let msg = format!("Failed to start ngrok ({}): {}. Ensure ngrok is installed or placed in the app folder.", ngrok_binary, e);
+                    let msg = format!("Failed to locate ngrok sidecar: {}", e);
                     tracing::error!("{}", msg);
                     return Err(msg);
                 }
